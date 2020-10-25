@@ -56,5 +56,4 @@ public class Peer {
         this.portNo = portNo;
     }
 
-    // Handlers for events of state machine here
 }
