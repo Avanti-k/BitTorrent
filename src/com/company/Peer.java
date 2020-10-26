@@ -10,6 +10,7 @@ public class Peer {
     private int peerId;
     private Socket connection;
     private byte[] bitfield;
+    Map<Integer, Integer> PeerIDtoDownloadRate;  //initialize this somewhere
 
     Boolean unchoked = false; // maintain current status of that Neighbour
     // getters
@@ -31,6 +32,10 @@ public class Peer {
 
     public byte[] getBitfield(){
         return this.bitfield;
+    }
+
+    public Map<Integer, Integer> getPeerIDtoDownloadRate(){
+        return this.PeerIDtoDownloadRate;
     }
 
     // setters
