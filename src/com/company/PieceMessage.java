@@ -1,18 +1,11 @@
 package com.company;
 
 public class PieceMessage extends Message{
-    private int pieceIndex;
-    private byte[] pieceContent;
-
-    public PieceMessage(int pieceIndex, byte[] content){
-        this.pieceContent = content;
-        this.pieceIndex = pieceIndex;
+    public PieceMessage(byte[] input) {
+        super(input);
     }
-
-    public PieceMessage createPieceMsg(int pieceIndex, byte[] pieceContent){
-        // TODO add remaining fields
-        PieceMessage pieceMessage = new PieceMessage(pieceIndex, pieceContent);
-        return pieceMessage;
+    public PieceMessage(byte[] payLoad, boolean parse){
+        super( payLoad, Constants.PIECE);
     }
 
 }

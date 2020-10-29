@@ -1,14 +1,10 @@
 package com.company;
 
 public class HaveMessage  extends  Message{
-    private int pieceId;
-    public HaveMessage(int pieceId)
-    {
-        this.pieceId = pieceId;
+    public HaveMessage(byte[] input) {
+        super(input);
     }
-    public HaveMessage createHaveMsg(int pieceId){
-        // TODO fill msg type, mength and piece Id as payload here
-        HaveMessage haveMessage = new HaveMessage(pieceId);
-        return haveMessage;
+    public HaveMessage(byte[] payLoad, boolean parse){
+        super( payLoad, Constants.HAVE);
     }
 }

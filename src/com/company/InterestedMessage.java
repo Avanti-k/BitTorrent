@@ -1,9 +1,10 @@
 package com.company;
 
 public class InterestedMessage extends Message {
-    public InterestedMessage createInteresed(){
-        // this will also have no payload
-        InterestedMessage interestedMessage = new InterestedMessage();
-        return interestedMessage;
+    public InterestedMessage(byte[] input) {
+        super(input);
+    }
+    public InterestedMessage(byte[] payLoad, boolean parse){
+        super( payLoad, Constants.INTERESTED);
     }
 }

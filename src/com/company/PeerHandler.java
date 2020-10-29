@@ -20,6 +20,8 @@ public class PeerHandler extends Thread {
         // called when bitfield is received from peer
         // if this peer has needed pieces send "interested msg"
         // else send 'not interested msg
+
+
         return true;
     }
 
