@@ -7,6 +7,8 @@ import java.io.*;
 import java.util.*;
 import java.lang.*;
 import java.util.ArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 // Actual node, will keep listening to msgs and divert  them to peer handlers accordingly.
 // one new peer handler per peer.
 
@@ -21,19 +23,21 @@ public class Node {
 
     private int numOfUnchokedPeers;
     // TODO add timers Peerlist update and random optimistic peer update
-    private byte[] myBitfied;
+    private byte[] myBitfield;
     private HashSet<Integer> unchokedPeers;      // contains index of currently unchoked peers
     // TODO Add more data members here
     private int OptimisticallySelectedPeer;
     private List<Integer> InterestedButNotSelected;
     private Boolean HasCompleteFile = false; //set in the beginning based on the PeerInfo file
     int k = 0, m = 0, p = 0; //define in commonconfig file later
-
+    Lock bitfieldLock;
     Node()
     {
         unchokedPeers = new HashSet<>();
         preferredPeers = new HashSet<>();
         interestedPeerList = new ArrayList<>();
+        bitfieldLock = new ReentrantLock();
+        myBitfield = new byte[2]; // TODO not sure if 2 or 4 bytes
     }
 
 
@@ -56,7 +60,7 @@ public class Node {
     }
 
     public byte[] getMyBitfield() {
-        return myBitfied;
+        return myBitfield;
     }
 
     //setters for used variables
@@ -76,10 +80,62 @@ public class Node {
         this.InterestedButNotSelected = InterestedButNotSelected;
     }
 
-    public void updateMyBitfiled(){
-        // MUST BE CALLED WITH MUTEX
-        // each handler thread will call it from their context
-        // to update 'myBitfield'
+    /* Takes piece index and creates a byte with '1' at that index */
+    public byte[] generateByteFromBinaryString(int pieceIndex){
+        StringBuilder binaryString = new StringBuilder();
+        byte[] resultingBitField = new byte[2];
+        for(int i = 0; i < 8; i ++){
+            if((pieceIndex % 8) == i){
+                binaryString.append('1');
+            }
+            else {
+                binaryString.append('0');
+            }
+        }
+        //System.out.println("\n Binary String = " + binaryString);
+        if(pieceIndex < 7){
+            resultingBitField[0] = (byte)(Integer.parseInt(String.valueOf(binaryString), 2));
+            resultingBitField[1] = (byte) 0x00;
+        }
+        else{
+            resultingBitField[1] =  (byte)Integer.parseInt(String.valueOf(binaryString), 2);
+            resultingBitField[0] = (byte) 0x00;
+        }
+        System.out.println( "\n ResultingBitField = " + Util.convertBytetoInt(resultingBitField));
+        return resultingBitField;
+    }
+
+    /* each handler thread will call it from their context
+     to update 'myBitfield' */
+    public void updateMyBitfiled(int pieceIndex){
+
+        bitfieldLock.lock();
+        try {
+            // Do bit manipulation here
+            byte[] newBitField = generateByteFromBinaryString(pieceIndex);
+            byte[] tempBitField = new byte[2];
+
+            // First Byte
+            int result = myBitfield[0] | newBitField[0];
+            tempBitField[0] = (byte)(result & 0xff); // byte is signed so use int and mask
+            System.out.println("\n MSB | operand MSB = " + (tempBitField[0] & 0xff));
+
+            // Second Byte
+            result = myBitfield[1] | newBitField[1];
+            tempBitField[1] = (byte)(result & 0xff);
+            System.out.println("\n LSB | operand LSB = " + (tempBitField[1] & 0xff));
+
+            myBitfield = tempBitField;
+            System.out.println( "\n Updated Bit Field = " + (Util.convertBytetoInt(myBitfield) & 0xffff));
+
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            bitfieldLock.unlock();
+        }
     }
 
     public void updatePreferedPeerList(){

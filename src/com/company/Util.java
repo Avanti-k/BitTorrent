@@ -1,5 +1,6 @@
 package com.company;
 
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
@@ -9,7 +10,8 @@ public class Util {
     }
 
     public static int convertBytetoInt(byte[] array){
-        return ByteBuffer.wrap(array).getInt();
+        return new BigInteger(array).intValue();
+        //return ByteBuffer.wrap(array).getInt(); this is throwing some exception
     }
 
     public static byte[] convertStringToByte(String str){
