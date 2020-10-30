@@ -3,39 +3,56 @@ package com.company;
 import java.net.Socket;
 import java.lang.Thread;
 import java.lang.InterruptedException;
+import java.io.*;
+import java.util.*;
+import java.lang.*;
+import java.util.ArrayList;
 // Actual node, will keep listening to msgs and divert  them to peer handlers accordingly.
 // one new peer handler per peer.
 
 public class Node {
     Peer peer;
+    PeerHandler peerhandler;
     private Socket listeningSocket;     // it will keep accepting new connections
     private Peer[] neighbourList;          // neighbours it is connected
     private int[] ChokedPeerList;           // indices of choked peers
-    private int[] interestedPeerList;       // indices of interested peers
-    private int[] preferredPeers;           // indices of currently active peers
+    private List<Integer> interestedPeerList;       // indices of interested peers
+    private HashSet<Integer> preferredPeers;           // indices of currently active peers
 
     private int numOfUnchokedPeers;
     // TODO add timers Peerlist update and random optimistic peer update
     private byte[] myBitfied;
-    private int[] unchokedPeers;      // contains index of currently unchoked peers
+    private HashSet<Integer> unchokedPeers;      // contains index of currently unchoked peers
     // TODO Add more data members here
     private int OptimisticallySelectedPeer;
-    private int[] InterestedButNotSelected;
+    private List<Integer> InterestedButNotSelected;
     private Boolean HasCompleteFile = false; //set in the beginning based on the PeerInfo file
+    int k = 0, m = 0, p = 0; //define in commonconfig file later
+
+    Node()
+    {
+        unchokedPeers = new HashSet<>();
+        preferredPeers = new HashSet<>();
+        interestedPeerList = new ArrayList<>();
+    }
+
 
     //getters & setters can be added if needed later.
     //getters for used variables
-    public int[] getinterestedPeerList(){
+    public List<Integer> getinterestedPeerList(){
         return this.interestedPeerList;
     }
-    public int[] getpreferredPeers(){
+    public HashSet<Integer> getpreferredPeers(){
         return this.preferredPeers;
     }
     public int getOptimisticallySelectedPeer(){
         return this.OptimisticallySelectedPeer;
     }
-    public int[] getInterestedButNotSelected(){
+    public List<Integer> getInterestedButNotSelected(){
         return this.InterestedButNotSelected;
+    }
+    public HashSet<Integer> getunchokedPeers(){
+        return this.unchokedPeers;
     }
 
     public byte[] getMyBitfied() {
@@ -43,11 +60,11 @@ public class Node {
     }
 
     //setters for used variables
-    public void setinterestedPeerList(int[] interestedPeerList) {
+    public void setinterestedPeerList(List<Integer>  interestedPeerList) {
         this.interestedPeerList = interestedPeerList;
     }
 
-    public void setpreferredPeers(int[] preferredPeers) {
+    public void setpreferredPeers(HashSet<Integer> preferredPeers) {
         this.preferredPeers = preferredPeers;
     }
 
@@ -55,7 +72,7 @@ public class Node {
         this.OptimisticallySelectedPeer = OptimisticallySelectedPeer;
     }
 
-    public void setInterestedButNotSelected(int[] InterestedButNotSelected) {
+    public void setInterestedButNotSelected(List<Integer> InterestedButNotSelected) {
         this.InterestedButNotSelected = InterestedButNotSelected;
     }
 
@@ -69,37 +86,47 @@ public class Node {
     // to be called after timer p sets in.
     // calculate new preferred peers from peerlist
     // and send them unchoke msgs
+        Node node = this;
         Thread thread = new Thread() {
             public void run() {
                 System.out.println("Thread for selecting preferred peer Running");
                 //select preferred neighbors
                 //sort interested peers in dec order of their downloading rate
-                Arrays.sort(this.interestedPeerList, (i1, i2) -> peer.getPeerIDtoDownloadRate().get(i2) - peer.getPeerIDtoDownloadRate().get(i1));
+                Collections.sort(node.interestedPeerList, (i1, i2) -> peer.getPeerIDtoDownloadRate().get(i2) - peer.getPeerIDtoDownloadRate().get(i1));
                 //update preferred peer list
-                if (getinterestedPeerList().length < k) {
-                    setpreferredPeers(Arrays.copyOfRange(this.interestedPeerList, 0, this.interestedPeerList.length));
-                    this.InterestedButNotSelected.clear();
+                if (getinterestedPeerList().size() < k) {
+                    List<Integer> first = new ArrayList<>(node.interestedPeerList.subList(0, node.interestedPeerList.size()));
+                    HashSet<Integer> tSet = new HashSet<Integer>();
+                    tSet.addAll(first);
+                    setpreferredPeers(tSet);
+                    node.InterestedButNotSelected = null;
                 } else {
-                    setpreferredPeers(Arrays.copyOfRange(this.interestedPeerList, 0, k)); //k defined in config file //"in case of tie, choose randomly" is anyway taken care right?
-                    setInterestedButNotSelected(Arrays.copyOfRange(this.interestedPeerList, k + 1, this.interestedPeerList.length));
+                    List<Integer> first1 = new ArrayList<>(node.interestedPeerList.subList(0, k));
+                    List<Integer> second1 = new ArrayList<>(node.interestedPeerList.subList(k+1, node.interestedPeerList.size()));
+                    HashSet<Integer> tSet1 = new HashSet<Integer>();
+                    tSet1.addAll(first1);
+                    setpreferredPeers(tSet1);
+                    setInterestedButNotSelected(second1);
                 }
                 //choke or unchoke them (only k) based on their current state
 
                 //unchoking selected ones
-                for (int PreferredPeer : this.preferredPeers) {
-                    if (!this.unchokedPeers.contains(PreferredPeer)) //if previously not choked, //todo : take care of opt selected peer
+                for (int PreferredPeer : node.preferredPeers) {
+                    if (!getunchokedPeers().contains(PreferredPeer)) //if previously not choked //opt selected peer selected and choked separately
                     {
-                        this.unchokedPeers.add(PreferredPeer);
-                        sendUnchokedMsg(PreferredPeer); //change argument passed later
+                        node.unchokedPeers.add(PreferredPeer);
+                        peerhandler.sendUnchokedMsg(); //argument to send : PreferredPeer
                     }
                 }
 
                 //choking not selected connections
-                for (int unchokedPeer : this.unchokedPeers) {
-                    if (!this.preferredPeers.contains(unchokedPeer)) //todo : take care of opt selected peer
+                for (int unchokedPeer : node.unchokedPeers) {
+                    if (!node.preferredPeers.contains(unchokedPeer))
                     {
-                        this.unchokedPeers.remove(unchokedPeer);
-                        sendChokeMsg(unchokedPeer);
+                        if(unchokedPeer != node.OptimisticallySelectedPeer) {
+                            node.unchokedPeers.remove(unchokedPeer);
+                            peerhandler.sendChokeMsg(); //argument to send : unchokedPeer
+                        }
                     }
                 }
                 //in this p interval itself, calculate downloading rates for next p!!
@@ -116,19 +143,22 @@ public class Node {
     public void updateOptimisticallyUnchokedPeer(){
         // after timer m sets in update one optimistically
         //selected neighbour and send 'unchoke msg'
+        Node node = this;
         Thread thread = new Thread(){
             public void run() {
                 System.out.println("Thread for selecting optimistic unchoked peer Running");
                 //select opt unchoked neighbor
-                if (getInterestedButNotSelected().empty()) {
-                    this.OptimisticallySelectedPeer = 0; //or what to keep ?
+                if (getInterestedButNotSelected() == null) {
+                    node.OptimisticallySelectedPeer = 0; //or what to keep ?
                 } else {
-                    int rnd = new Random().nextInt(this.InterestedButNotSelected.size());
-                    setOptimisticallySelectedPeer(InterestedButNotSelected[rnd]);
-                    sendUnchokedMsg(this.OptimisticallySelectedPeer); //change argument passed later
+                    Random rand = new Random();
+                    int randomElement = InterestedButNotSelected.get(rand.nextInt(InterestedButNotSelected.size()));
+                    setOptimisticallySelectedPeer(randomElement);
+                    peerhandler.sendUnchokedMsg(); //argument to send : node.OptimisticallySelectedPeer
                 }
                 try {
                     Thread.sleep(m); // m = optimistic unchoking interval (define in config file)
+                    // convert it into milliseconds and is a timer required ?
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
