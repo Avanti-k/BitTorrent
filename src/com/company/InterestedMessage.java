@@ -1,9 +1,12 @@
 package com.company;
 
 public class InterestedMessage extends Message {
-    public InterestedMessage createInteresed(){
-        // this will also have no payload
-        InterestedMessage interestedMessage = new InterestedMessage();
-        return interestedMessage;
+    // byte to object
+    public InterestedMessage(byte[] input) {
+        super(input);
+    }
+    // used to create message object from parameters
+    public InterestedMessage(){
+        super(Constants.INTERESTED);
     }
 }

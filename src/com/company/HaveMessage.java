@@ -1,14 +1,31 @@
 package com.company;
 
 public class HaveMessage  extends  Message{
-    private int pieceId;
-    public HaveMessage(int pieceId)
-    {
-        this.pieceId = pieceId;
+    private int pieceIndex;
+    public HaveMessage(byte[] input) {
+        super(input);
+        parsePayload();
     }
-    public HaveMessage createHaveMsg(int pieceId){
-        // TODO fill msg type, mength and piece Id as payload here
-        HaveMessage haveMessage = new HaveMessage(pieceId);
-        return haveMessage;
+
+    /* Parameters to Object formation */
+    public HaveMessage(int pieceIndex){
+        super( pieceIndex, Constants.HAVE);
+        parsePayload();
+    }
+
+    /* Parses the payload into Piece Id */
+    void parsePayload(){
+        byte[] idBytes = new byte[4];
+        int i = 0;
+        int index = 0;
+        for(; i < 4; i++){
+            idBytes[index] = this.messagePayload[i];
+            index++;
+        }
+        this.pieceIndex = Util.convertBytetoInt(idBytes);
+    }
+
+    public int getPieceIndex() {
+        return pieceIndex;
     }
 }

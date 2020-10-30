@@ -45,46 +45,66 @@ public class PeerHandler extends Thread {
         // to validate the peer
     }
     public void sendHandshakeMsg(){
-        //TODO send handshake msg here
+        HandshakeMessage handshakeMessage = new HandshakeMessage(1); // hardcoded peer ID
+        byte[] handshakeMessageInBytes = handshakeMessage.getMessage();
+        // TODO send byteMessage over TCP socket here
     }
 
     /* Sends the nodes bitfield to peer at time of handshake */
     public void sendBitfieldMsg(){
-        //TODO
-        // wrap this.bitfied in Bitfield msg and send over TCP socket
-        // corresponding to the peer.
-        // parent.getMyBitfield
+        byte[] bitfield =  parent.getMyBitfield();
+        // just for having common menthod converting bitfied to int here
+        int bitFieldInt = Util.convertBytetoInt(bitfield);
+        BitfieldMessage bitfieldMessage = new BitfieldMessage(bitFieldInt);
+        byte[] bitfieldMessageInBytes = bitfieldMessage.getMessage();
+        // TODO send over TCP
     }
 
-
     public void sendInterestedMsg(){
-
+        InterestedMessage interestedMessage = new InterestedMessage();
+        byte[] interestedMessageInBytes = interestedMessage.getMessage();
+        // SEND over tcp
     }
 
     public void sendNotInterestedMsg(){
-
+        NotInterestedMessage notInterestedMessage = new NotInterestedMessage();
+        byte[] notInterestedMessageInBytes = notInterestedMessage.getMessage();
+        // SEND over tcp
     }
 
     public void sendHaveMsg(){
+        int pieceID = 1; // For now hardcoding.
+        HaveMessage haveMessage = new HaveMessage(pieceID);
+        byte[] haveMessageInBytes = haveMessage.getMessage();
+        // Send over TCP
 
     }
 
     private void sendRequestMsg(){
         // maybe use a timeout here for corner case
         // A requests a piece but get choked before receiving result
-
+        int pieceID = 1; // For now hardcoding.
+        RequestMessage requestMessage = new RequestMessage(pieceID);
+        byte[] requestMessageInBytes = requestMessage.getMessage();
+        // send over TCP
     }
 
     public void sendChokeMsg(){
         // send choke and stop sending pieces
+        ChokeMessage chokeMessage = new ChokeMessage();
+        byte[] chokeMessageInBytes = chokeMessage.getMessage();
     }
 
     public void sendUnchokedMsg(){
+        UnchokeMessage unchokeMessage = new UnchokeMessage();
+        byte[] unchokeMessageInBytes = unchokeMessage.getMessage();
 
     }
 
     public void sendPieceMsg(){
-
+        int pieceIdD = 1; // for now hardcoded
+        byte[] pieceContent = "DUMMY\tCONTENT".getBytes();
+        PieceMessage pieceMessage = new PieceMessage( pieceIdD, pieceContent);
     }
 
     public void receivedHaveMsg(){

@@ -1,14 +1,30 @@
 package com.company;
 
 public class RequestMessage extends Message {
-    int pieceIndex;
-    public RequestMessage(int pieceIndex) {
-        this.pieceIndex = pieceIndex;
+    private int pieceIndex;
+    public RequestMessage(byte[] input) {
+        super(input);
+        parsePayload();
+    }
+    public RequestMessage(int pieceIndex){
+        super( pieceIndex, Constants.REQUEST);
+        parsePayload();
     }
 
-    public RequestMessage createRequestMsg(int pieceIndex){
-        // TODO add remaining fields
-        RequestMessage requestMessage = new RequestMessage(pieceIndex);
-        return requestMessage;
+
+    /* Parses the payload into Piece Id */
+    void parsePayload(){
+        byte[] idBytes = new byte[4];
+        int i = 0;
+        int index = 0;
+        for(; i < 4; i++){
+            idBytes[index] = this.messagePayload[i];
+            index++;
+        }
+        this.pieceIndex = Util.convertBytetoInt(idBytes);
+    }
+
+    public int getPieceIndex() {
+        return pieceIndex;
     }
 }

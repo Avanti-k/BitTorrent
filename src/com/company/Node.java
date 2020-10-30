@@ -55,7 +55,7 @@ public class Node {
         return this.unchokedPeers;
     }
 
-    public byte[] getMyBitfied() {
+    public byte[] getMyBitfield() {
         return myBitfied;
     }
 
