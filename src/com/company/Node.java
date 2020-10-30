@@ -1,5 +1,6 @@
 package com.company;
 
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.lang.Thread;
 import java.lang.InterruptedException;
@@ -12,10 +13,13 @@ import java.util.concurrent.locks.ReentrantLock;
 // Actual node, will keep listening to msgs and divert  them to peer handlers accordingly.
 // one new peer handler per peer.
 
-public class Node {
+public class Node extends Thread{
     Peer peer;
     PeerHandler peerhandler;
-    private Socket listeningSocket;     // it will keep accepting new connections
+    // This will store handler threads against each peerId. Use this to send choke unchoke msg
+    private HashMap<Integer, PeerHandler> PeerMap = new HashMap<Integer, PeerHandler>();
+    private ServerSocket listeningSocket;     // it will keep accepting new connections
+    private int sPort = 8000;
     private Peer[] neighbourList;          // neighbours it is connected
     private int[] ChokedPeerList;           // indices of choked peers
     private List<Integer> interestedPeerList;       // indices of interested peers
@@ -31,6 +35,7 @@ public class Node {
     private Boolean HasCompleteFile = false; //set in the beginning based on the PeerInfo file
     int k = 0, m = 0, p = 0; //define in commonconfig file later
     Lock bitfieldLock;
+
     Node()
     {
         unchokedPeers = new HashSet<>();
@@ -40,7 +45,35 @@ public class Node {
         myBitfield = new byte[2]; // TODO not sure if 2 or 4 bytes
     }
 
+    public void run(){
+        System.out.println("The server is running....");
 
+        try {
+            listeningSocket = new ServerSocket(sPort);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        int clientNum = 1;
+        try {
+            while(true) {
+                new PeerHandler(listeningSocket.accept(),this).start();
+                System.out.println("Client "  + clientNum + " is connected!");
+                clientNum++;
+                //TODO
+                // add timers and then timout logic here
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            try {
+                listeningSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
     //getters & setters can be added if needed later.
     //getters for used variables
     public List<Integer> getinterestedPeerList(){

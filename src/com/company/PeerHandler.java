@@ -1,5 +1,6 @@
 package com.company;
 
+import java.awt.desktop.SystemEventListener;
 import java.net.Socket;
 
 public class PeerHandler extends Thread {
@@ -7,13 +8,21 @@ public class PeerHandler extends Thread {
     Peer peer;
     private Socket connection;
     Node parent;            // parent node= actual node
-    PeerHandler(Node parent){
+    PeerHandler(Socket clientSocket, Node parent){
         this.parent = parent;
+        this.connection = clientSocket;
     }
 
     //TODO
     // Write State machine and corresponding functions here to handle one connection
 
+    public void run(){
+        System.out.println("One peer Handler thread started..");
+        while(true){
+            // STUB
+            // Entry point of state machine.
+        }
+    }
     // STUB functions for state machine.
 
     public boolean checkIfInterested_bitfield(){
