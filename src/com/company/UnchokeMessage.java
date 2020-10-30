@@ -5,7 +5,7 @@ public class UnchokeMessage extends Message {
     public UnchokeMessage(byte[] input) {
         super(input);
     }
-    public UnchokeMessage(byte[] payLoad, boolean parse){
-        super( payLoad, Constants.UNCHOKE);
+    public UnchokeMessage(){
+        super( Constants.UNCHOKE);
     }
 }

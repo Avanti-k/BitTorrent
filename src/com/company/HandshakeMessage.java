@@ -21,10 +21,13 @@ public class HandshakeMessage {
             index++;
         }
         index = 0;
+        // BUG:  should be length + i;
+        /// index increment
         for(; i < zeroes.length; i++){
             zeroes[index] = input[i];
         }
         index = 0;
+        //BUG : Should be length + i
         for(; i < peerByte.length; i++){
             peerByte[index] = input[i];
             index++;

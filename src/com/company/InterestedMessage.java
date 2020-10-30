@@ -1,10 +1,12 @@
 package com.company;
 
 public class InterestedMessage extends Message {
+    // byte to object
     public InterestedMessage(byte[] input) {
         super(input);
     }
-    public InterestedMessage(byte[] payLoad, boolean parse){
-        super( payLoad, Constants.INTERESTED);
+    // used to create message object from parameters
+    public InterestedMessage(){
+        super(Constants.INTERESTED);
     }
 }

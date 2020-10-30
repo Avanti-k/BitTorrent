@@ -18,7 +18,7 @@ public class Node {
     // TODO Add more data members here
     //getters & setters can be added if needed later.
 
-    public byte[] getMyBitfied() {
+    public byte[] getMyBitfield() {
         return myBitfied;
     }
 
