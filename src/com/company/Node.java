@@ -27,6 +27,7 @@ public class Node {
     private int OptimisticallySelectedPeer;
     private List<Integer> InterestedButNotSelected;
     private Boolean HasCompleteFile = false; //set in the beginning based on the PeerInfo file
+    private int expectedpeerID;
     int k = 0, m = 0, p = 0; //define in commonconfig file later
 
     Node()
@@ -54,11 +55,12 @@ public class Node {
     public HashSet<Integer> getunchokedPeers(){
         return this.unchokedPeers;
     }
-
     public byte[] getMyBitfield() {
         return myBitfied;
     }
-
+    public int getexpectedpeerID() {
+        return expectedpeerID;
+    }
     //setters for used variables
     public void setinterestedPeerList(List<Integer>  interestedPeerList) {
         this.interestedPeerList = interestedPeerList;
@@ -74,6 +76,24 @@ public class Node {
 
     public void setInterestedButNotSelected(List<Integer> InterestedButNotSelected) {
         this.InterestedButNotSelected = InterestedButNotSelected;
+    }
+
+    public void setexpectedpeerID(int expectedpeerID) {
+        this.expectedpeerID = expectedpeerID;
+    }
+
+    public void setHasCompleteFile() {
+        this.HasCompleteFile = true;
+    }
+
+    public void addtointerestedPeerList(int id)
+    {
+        this.interestedPeerList.add(id);
+    }
+
+    public void removefrominterestedPeerList(int id)
+    {
+        this.interestedPeerList.remove(id);
     }
 
     public void updateMyBitfiled(){

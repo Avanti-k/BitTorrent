@@ -16,18 +16,38 @@ public class PeerHandler extends Thread {
 
     // STUB functions for state machine.
 
-    public boolean checkIfInterested_bitfield(){
+    public boolean checkIfInterested_bitfield(BitfieldMessage msg){
         // called when bitfield is received from peer
-        // if this peer has needed pieces send "interested msg"
-        // else send 'not interested msg
+        //if the sender has pieces receiver doesnot have - send interested msg
+        //else - send not interested msg
+        byte[] tempBitField = new byte[2];
+        int res = parent.getMyBitfield()[0] | msg.getBitfield()[0];
+        tempBitField[0] = (byte)(res & 0xff);
+
+        res = parent.getMyBitfield()[1] | msg.getBitfield()[1];
+        tempBitField[1] = (byte)(res & 0xff);
+
+        if(parent.getMyBitfield() == tempBitField) {
+            return false;
+        }
         return true;
     }
 
     // Can be combined with above method later
-    public boolean checkIfInterested_Have(){
+    public boolean checkIfHave(byte[] havepiece){
         // called after receiving a 'have' msg from peer.
         // check if the piece ID received is needed by you.
         // if so send 'interested' msg else 'not interested'
+        byte[] tempBitField = new byte[2];
+        int res = parent.getMyBitfield()[0] & havepiece[0];
+        tempBitField[0] = (byte)(res & 0xff); // is it & when bitwise AND is used ?
+
+        res = parent.getMyBitfield()[1] & havepiece[1];
+        tempBitField[1] = (byte)(res & 0xff);
+
+        if(havepiece != tempBitField) {
+            return false;
+        }
         return true;
     }
 
@@ -35,18 +55,33 @@ public class PeerHandler extends Thread {
     public boolean checkHandshakeHeader(HandshakeMessage msg){
         // TODO
         // Check if header is correct string
-        // check if peer ID is the correct one
-
+        //check peer ID is the expected one.
+        if(msg.header != "P2PFILESHARINGPROJ" || msg.getPeerId() != parent.getexpectedpeerID())
+        {
+            return false;
+        }
         return true;
     }
 
     public void receiveHandshakeMsg(){
         // receive HS msg and check the headers
         // to validate the peer
+        // TODO receive msg over TCP in bytes
+        byte[] rcvHSMessage = new byte[10]; // random assignment for compilation - variable to receive over tcp
+        HandshakeMessage handshakemessage = new HandshakeMessage(rcvHSMessage);
+        if(checkHandshakeHeader(handshakemessage))
+        {
+            sendBitfieldMsg();
+        }
+        else
+        {
+            //keep listening
+        }
     }
     public void sendHandshakeMsg(){
         HandshakeMessage handshakeMessage = new HandshakeMessage(1); // hardcoded peer ID
         byte[] handshakeMessageInBytes = handshakeMessage.getMessage();
+        parent.setexpectedpeerID(1); //hardcoded peer ID
         // TODO send byteMessage over TCP socket here
     }
 
@@ -110,35 +145,80 @@ public class PeerHandler extends Thread {
     public void receivedHaveMsg(){
         // check and update peer's bitfield
         // send 'interested' msg to NB
+        byte[] rcvHaveMsg = new byte[10];
+        HaveMessage haveMessage = new HaveMessage(rcvHaveMsg);
+        // ?? check and update peer's bitfield ??
+        byte[] havepiece = parent.generateByteFromBinaryString(haveMessage.getPieceIndex());
+        if(checkIfHave(havepiece))
+        {
+            sendInterestedMsg();
+        }
+        else
+        {
+            sendNotInterestedMsg();
+        }
     }
 
     public void receiveBitfield(){
         // TODO
-        // receive bitfield msg here and update Node's bitfield.
         //send 'interested' msgs to the sender
+        byte[] rcvBitfield = new byte[10];
+        BitfieldMessage bitfieldMessage = new BitfieldMessage(rcvBitfield);
+
+        // receive bitfield msg here and update Node's bitfield. - ??
+        parent.updateMyBitfiled();
+
+        if(checkIfInterested_bitfield(bitfieldMessage))
+        {
+            sendInterestedMsg();
+        }
+        else
+        {
+            sendNotInterestedMsg();
+        }
     }
 
     public void receivedInterestedMsg(){
+        // receive msg over TCP in bytes
+        byte[] rcvInterestedMsg = new byte[10]; // random assignment for compilation - variable to receive over tcp
+        InterestedMessage interestedMessage = new InterestedMessage(rcvInterestedMsg);
         // update interested peer array of parent node here
-
+        parent.addtointerestedPeerList(peer.getPeerId());
     }
 
     public void receivedNotInterested(){
-        // if this peer was previously in interested array
-        // remove it
+        // receive msg over TCP in bytes
+        byte[] rcvNotInterestedMsg = new byte[10]; // random assignment for compilation - variable to receive over tcp
+        NotInterestedMessage notInterestedMessage = new NotInterestedMessage(rcvNotInterestedMsg);
+        // if this peer was previously in interested array, remove it
+        parent.removefrominterestedPeerList(peer.getPeerId());
     }
+
     public void receiveChokeMsg(){
         // dont transmit
+        byte[] rcvChokeMsg = new byte[10];
+        ChokeMessage chokeMessage = new ChokeMessage(rcvChokeMsg);
+        //any blocking required?
     }
 
     public void receiveUnchokeMsg(){
         // find out required piece and begin transmitting.
         // send 'request' msg here
+        byte[] rcvUnchokeMsg = new byte[10];
+        UnchokeMessage unchokeMessage = new UnchokeMessage(rcvUnchokeMsg);
+        sendRequestMsg();
     }
 
     public void receiveRequestMsg(){
         // check the requested piece id
         // if you have it send 'piece msg' with payload
+        byte[] rcvRequestMsg = new byte[10];
+        RequestMessage requestMessage = new RequestMessage(rcvRequestMsg);
+        byte[] requestedpiece = parent.generateByteFromBinaryString(requestMessage.getPieceIndex());
+        if(checkIfHave(requestedpiece))
+        {
+        //    sendPieceMsg(); with content (that piece)
+        }
     }
 
     public void receivePieceMsg(){
@@ -148,11 +228,26 @@ public class PeerHandler extends Thread {
         // call 'completePieceReceived'
         // check next piece of interest as well, and if so send 'request' else
         // send 'not interested'
+        byte[] rcvRequestMsg = new byte[10];
+        PieceMessage pieceMessage = new PieceMessage(rcvRequestMsg);
+        parent.updateMyBitfiled(); //should be parent or peer ? peer right ?
+        //if(any pieces needed) - keep a function to find the missing pieces in peer
+        //and also it should not be requested if it has already been requested to someone else
+        //{
+            //sendRequestMsg();
+        //}
+        //else
+        //{
+            //sendNotInterestedMsg();
+        //}
     }
+
     public void completePieceReceived(){
         // update parents bitfield and all peers bitfield
         // send 'not interested' msg if needed to any peer from here
-
+        parent.setHasCompleteFile();
+        parent.updateMyBitfiled();
+        // ?? how to know to which all peer send 'not interested'
     }
 
 }
