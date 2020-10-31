@@ -1,5 +1,6 @@
 package com.company;
 
+import java.awt.desktop.SystemEventListener;
 import java.net.Socket;
 
 public class PeerHandler extends Thread {
@@ -7,13 +8,21 @@ public class PeerHandler extends Thread {
     Peer peer;
     private Socket connection;
     Node parent;            // parent node= actual node
-    PeerHandler(Node parent){
+    PeerHandler(Socket clientSocket, Node parent){
         this.parent = parent;
+        this.connection = clientSocket;
     }
 
     //TODO
     // Write State machine and corresponding functions here to handle one connection
 
+    public void run(){
+        System.out.println("One peer Handler thread started..");
+        while(true){
+            // STUB
+            // Entry point of state machine.
+        }
+    }
     // STUB functions for state machine.
 
     public boolean checkIfInterested_bitfield(BitfieldMessage msg){
@@ -166,7 +175,7 @@ public class PeerHandler extends Thread {
         BitfieldMessage bitfieldMessage = new BitfieldMessage(rcvBitfield);
 
         // receive bitfield msg here and update Node's bitfield. - ??
-        parent.updateMyBitfiled();
+        parent.updateMyBitfiled(1);
 
         if(checkIfInterested_bitfield(bitfieldMessage))
         {
@@ -230,7 +239,7 @@ public class PeerHandler extends Thread {
         // send 'not interested'
         byte[] rcvRequestMsg = new byte[10];
         PieceMessage pieceMessage = new PieceMessage(rcvRequestMsg);
-        parent.updateMyBitfiled(); //should be parent or peer ? peer right ?
+        parent.updateMyBitfiled(1); //should be parent or peer ? peer right ?
         //if(any pieces needed) - keep a function to find the missing pieces in peer
         //and also it should not be requested if it has already been requested to someone else
         //{
@@ -246,7 +255,7 @@ public class PeerHandler extends Thread {
         // update parents bitfield and all peers bitfield
         // send 'not interested' msg if needed to any peer from here
         parent.setHasCompleteFile();
-        parent.updateMyBitfiled();
+        parent.updateMyBitfiled(1);
         // ?? how to know to which all peer send 'not interested'
     }
 
