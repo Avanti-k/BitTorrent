@@ -2,12 +2,17 @@ package com.company;
 
 import java.awt.desktop.SystemEventListener;
 import java.net.Socket;
+import java.io.*;
 
 public class PeerHandler extends Thread {
 
     Peer peer;
     private Socket connection;
     Node parent;            // parent node= actual node
+    private ObjectInputStream in;	//stream read from the socket
+    private ObjectOutputStream out;
+    String message;
+    String MESSAGE;
     PeerHandler(Socket clientSocket, Node parent){
         this.parent = parent;
         this.connection = clientSocket;
@@ -18,13 +23,36 @@ public class PeerHandler extends Thread {
 
     public void run(){
         System.out.println("One peer Handler thread started..");
-        while(true){
-            // STUB
-            // Entry point of state machine.
+        try {
+            while (true) {
+                //receive the message sent from the client
+                message = (String)in.readObject();
+                //show the message to the user
+                System.out.println("Receive message: " + message + " from client " + peer.getPeerId());
+                //Capitalize all letters in the message
+                MESSAGE = message.toUpperCase();
+                //send MESSAGE back to the client
+                sendMessage(MESSAGE);
+            }
+        }
+        catch(IOException | ClassNotFoundException ioException){
+            ioException.printStackTrace();
         }
     }
-    // STUB functions for state machine.
 
+    void sendMessage(String msg)
+    {
+        try{
+            //stream write the message
+            out.writeObject(msg);
+            out.flush();
+        }
+        catch(IOException ioException){
+            ioException.printStackTrace();
+        }
+    }
+
+    // STUB functions for state machine.
     public boolean checkIfInterested_bitfield(BitfieldMessage msg){
         // called when bitfield is received from peer
         //if the sender has pieces receiver doesnot have - send interested msg
