@@ -34,7 +34,6 @@ public class PeerInfoHandler {
                 peer.setIpAddress(values[1]);
                 peer.setPortNo(Integer.parseInt(values[2]));
                 peerHashMap.put(peer.getPeerId(), peer);
-
             }
 
         } catch (FileNotFoundException e) {
