@@ -8,7 +8,7 @@ public class HandshakeMessage {
     private byte[] zeroBits; // 10 bytes
     private int peerId; // 4 bytes
     public String header;
-    private byte[] message;
+    private byte[] message; // byte array of entire object
     public HandshakeMessage(byte[] input){
 
         byte[] peerByte = new byte[4];

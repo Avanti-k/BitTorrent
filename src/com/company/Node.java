@@ -1,5 +1,7 @@
 package com.company;
 
+import com.company.filehandler.PeerInfoHandler;
+
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.lang.Thread;
@@ -14,9 +16,9 @@ import java.util.concurrent.locks.ReentrantLock;
 // one new peer handler per peer.
 
 public class Node extends Thread{
-    Peer peer;
+    Peer peer; // Host
     PeerHandler peerhandler;
-    // This will store handler threads against each peerId. Use this to send choke unchoke msg
+    PeerInfoHandler peerInfoHandler;    // This will store handler threads against each peerId. Use this to send choke unchoke msg
     private HashMap<Integer, PeerHandler> PeerMap = new HashMap<Integer, PeerHandler>();
     private ServerSocket listeningSocket;     // it will keep accepting new connections
     private int sPort = 8000;
@@ -24,7 +26,7 @@ public class Node extends Thread{
     private int[] ChokedPeerList;           // indices of choked peers
     private List<Integer> interestedPeerList;       // indices of interested peers
     private HashSet<Integer> preferredPeers;           // indices of currently active peers
-
+    public boolean[] isRequested;
     private int numOfUnchokedPeers;
     // TODO add timers Peerlist update and random optimistic peer update
     private byte[] myBitfield;
@@ -36,18 +38,31 @@ public class Node extends Thread{
     private int expectedpeerID;
     int k = 0, m = 0, p = 0; //define in commonconfig file later
     Lock bitfieldLock;
+    Lock isRequestedLock;
 
-    Node()
+    public Node()
     {
         unchokedPeers = new HashSet<>();
         preferredPeers = new HashSet<>();
         interestedPeerList = new ArrayList<>();
         bitfieldLock = new ReentrantLock();
         myBitfield = new byte[2]; // TODO not sure if 2 or 4 bytes
+        isRequestedLock = new ReentrantLock();
+
+
     }
+
 
     public void run(){
         System.out.println("The server is running....");
+        // TODO DJs utility's number of pieces extract
+        int numPieces = 5; // TODO user myFilehandler dummy
+        boolean iHaveFile = true; // dummy TODO use Myfilehandler
+        isRequested = new boolean[numPieces];
+        if (iHaveFile)
+            Arrays.fill(isRequested, true);
+        else
+            Arrays.fill(isRequested, false);
 
         try {
             listeningSocket = new ServerSocket(sPort);
@@ -133,6 +148,20 @@ public class Node extends Thread{
         this.interestedPeerList.remove(id);
     }
 
+    // each peer handler will call from their thread
+    public void setIsRequested(int pieceIdIndex, boolean value){
+        isRequestedLock.lock();
+        isRequested[pieceIdIndex] = value;
+        isRequestedLock.unlock();
+    }
+
+    // just check
+    public boolean checkRequestedStatus(int pieceIdIndex){
+        isRequestedLock.lock();
+        boolean status = isRequested[pieceIdIndex];
+        isRequestedLock.unlock();
+        return status;
+    }
 
     /* Takes piece index and creates a byte with '1' at that index */
     public byte[] generateByteFromBinaryString(int pieceIndex){

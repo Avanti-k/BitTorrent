@@ -8,7 +8,7 @@ public class Message {
     private byte[] messageBytes; // entire msg packet in bytes
 
 
-// converts bytes to message object
+// converts bytes to message object when receiveing from SOCKET
     public Message(byte[] input){
         byte[] lenByte = new byte[4];
 
@@ -38,7 +38,7 @@ public class Message {
     public Message(int pieceID, byte[] messagePayload, byte type){
         byte[] combinedPayload = combineAndFormPayload(pieceID, messagePayload);
         this.messageType = type;
-        this.messagePayload = messagePayload;
+        this.messagePayload = combinedPayload;
         this.messageLength = 1 + messagePayload.length;
         byte[] lenByte = Util.convertIntToByte(messageLength);
 
@@ -67,6 +67,34 @@ public class Message {
     public Message(int payload, byte type){
         this.messageType = type;
         this.messagePayload = Util.convertIntToByte(payload);
+        this.messageLength = 1 + messagePayload.length;
+        byte[] lenByte = Util.convertIntToByte(messageLength);
+
+        messageBytes = new byte[5 + messagePayload.length];
+        int i = 0;
+        int index = 0;
+        for(; i < lenByte.length; i++){
+            messageBytes[i] = lenByte[index];
+            index++;
+        }
+        index = 0;
+        messageBytes[i] = type;
+        i++;
+
+        for(; i < messageBytes.length; i++){
+            messageBytes[i] = messagePayload[index];
+            index++;
+        }
+
+    }
+
+    /* Needed for Bitfield msg as variable bytes of bitfield ( Bitfield)
+
+    Bitfield - payload is te 4 byte byte
+    */
+    public Message(byte[] payload, byte type){
+        this.messageType = type;
+        this.messagePayload = payload;
         this.messageLength = 1 + messagePayload.length;
         byte[] lenByte = Util.convertIntToByte(messageLength);
 
