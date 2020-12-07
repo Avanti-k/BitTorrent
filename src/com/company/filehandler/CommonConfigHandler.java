@@ -7,10 +7,24 @@ import java.io.*;
 public class CommonConfigHandler {
     public static final String CONFIG_PATH = "";
     ProjectConfiguration projectConfiguration;
-    public CommonConfigHandler(){
+    private static CommonConfigHandler instance;
+    private CommonConfigHandler(){
         initialize();
         setUpFile();
+        setInternalValues();
+    }
 
+    private void setInternalValues() {
+
+    }
+
+    public static CommonConfigHandler getInstance() {
+        if(instance != null){
+        return instance;
+        }else {
+            instance = new CommonConfigHandler();
+            return instance;
+        }
 
     }
 
@@ -43,6 +57,9 @@ public class CommonConfigHandler {
             string = br.readLine();
             values =  string.split("\\s+");
             projectConfiguration.setPieceSize(Integer.parseInt(values[1]));
+
+            int numChunks = projectConfiguration.getFileSize()/ projectConfiguration.getPieceSize();
+            projectConfiguration.setNumChunks(numChunks);
 
 
 

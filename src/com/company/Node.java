@@ -166,21 +166,25 @@ public class Node extends Thread{
         bitfieldLock.lock();
         try {
             // Do bit manipulation here
-            byte[] newBitField = generateByteFromBinaryString(pieceIndex);
-            byte[] tempBitField = new byte[2];
+            BitSet bitSet = BitSet.valueOf(myBitfield);
+            bitSet.set(pieceIndex, true);
+            myBitfield = bitSet.toByteArray();
 
-            // First Byte
-            int result = myBitfield[0] | newBitField[0];
-            tempBitField[0] = (byte)(result & 0xff); // byte is signed so use int and mask
-            System.out.println("\n MSB | operand MSB = " + (tempBitField[0] & 0xff));
-
-            // Second Byte
-            result = myBitfield[1] | newBitField[1];
-            tempBitField[1] = (byte)(result & 0xff);
-            System.out.println("\n LSB | operand LSB = " + (tempBitField[1] & 0xff));
-
-            myBitfield = tempBitField;
-            System.out.println( "\n Updated Bit Field = " + (Util.convertBytetoInt(myBitfield) & 0xffff));
+//            byte[] newBitField = generateByteFromBinaryString(pieceIndex);
+//            byte[] tempBitField = new byte[2];
+//
+//            // First Byte
+//            int result = myBitfield[0] | newBitField[0];
+//            tempBitField[0] = (byte)(result & 0xff); // byte is signed so use int and mask
+//            System.out.println("\n MSB | operand MSB = " + (tempBitField[0] & 0xff));
+//
+//            // Second Byte
+//            result = myBitfield[1] | newBitField[1];
+//            tempBitField[1] = (byte)(result & 0xff);
+//            System.out.println("\n LSB | operand LSB = " + (tempBitField[1] & 0xff));
+//
+//            myBitfield = tempBitField;
+//            System.out.println( "\n Updated Bit Field = " + (Util.convertBytetoInt(myBitfield) & 0xffff));
 
 
         }

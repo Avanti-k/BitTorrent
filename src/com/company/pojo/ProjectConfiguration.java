@@ -7,6 +7,7 @@ public class ProjectConfiguration {
     String FileName;
     int FileSize;
     int PieceSize;
+    int numChunks;
 
     public void setFileName(String fileName) {
         FileName = fileName;
@@ -54,5 +55,13 @@ public class ProjectConfiguration {
 
     public int getFileSize() {
         return FileSize;
+    }
+
+    public int getNumChunks() {
+        return numChunks;
+    }
+
+    public void setNumChunks(int numChunks) {
+        this.numChunks = numChunks;
     }
 }
