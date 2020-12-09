@@ -21,16 +21,11 @@ public class PeerHandler extends Thread {
     Queue<Byte> commandQueue;
 
     String message;
-    String MESSAGE;
     PeerHandler(Socket clientSocket, Node parent){
         this.parent = parent;
         this.connection = clientSocket;
         commandQueue = new LinkedList<>();
     }
-
-    //TODO
-    // Write State machine and corresponding functions here to handle one connection
-
 
     public void run(){
         System.out.println("One peer Handler thread started..");
@@ -50,7 +45,6 @@ public class PeerHandler extends Thread {
                     {
                         sendUnchokedMsg();
                     }
-
                 }
                 byte[] messageInBytes = (byte[])in.readObject();
                 //show the message to the user
@@ -94,8 +88,6 @@ public class PeerHandler extends Thread {
                            default:
                                System.out.println("\n INVALID MESSAGE TYPE RECEIVED");
                            }
-
-
                 } // end else
             } // end while
         } catch(IOException | ClassNotFoundException ioException){
@@ -140,8 +132,7 @@ public class PeerHandler extends Thread {
 
     /* Checks if the Peer is valid one and return bool accordingly */
     public boolean checkHandshakeHeader(HandshakeMessage msg){
-        // TODO
-        // Check if header is correct string
+
         //check peer ID is the expected one.
         if(msg.header != "P2PFILESHARINGPROJ" || msg.getPeerId() != parent.getexpectedpeerID())
         {
@@ -171,7 +162,6 @@ public class PeerHandler extends Thread {
     public void sendHandshakeMsg(int peerId){
         HandshakeMessage handshakeMessage = new HandshakeMessage(peerId); // hardcoded peer ID
         byte[] handshakeMessageInBytes = handshakeMessage.getMessage();
-        //parent.setexpectedpeerID(1); //hardcoded peer ID
         sendMessage(handshakeMessageInBytes);
     }
 
@@ -210,7 +200,6 @@ public class PeerHandler extends Thread {
     private void sendRequestMsg(int pieceId){
         // maybe use a timeout here for corner case
         // A requests a piece but get choked before receiving result
-
         RequestMessage requestMessage = new RequestMessage(pieceId);
         byte[] requestMessageInBytes = requestMessage.getMessage();
         // send over TCP
@@ -232,8 +221,7 @@ public class PeerHandler extends Thread {
 
     // to be called from inside receive request msg
     public void sendPieceMsg(int pieceId){
-        // TODO fetch this content from chunk
-        byte[] pieceContent = "DUMMY\tCONTENT".getBytes();
+        byte[] pieceContent = parent.myFileHandler.getChunk(pieceId);
         PieceMessage pieceMessage = new PieceMessage( pieceId, pieceContent);
         sendMessage(pieceMessage.getMessage());
     }
@@ -245,12 +233,10 @@ public class PeerHandler extends Thread {
         // ?? check and update peer's bitfield ??
         //byte[] havepiece = parent.generateByteFromBinaryString(haveMessage.getPieceIndex());
         int havePieceId = haveMessage.getPieceIndex();
-        if(checkIfHave(havePieceId))
-        {
+        if(checkIfHave(havePieceId)) {
             sendNotInterestedMsg();
         }
-        else
-        {
+        else {
             sendInterestedMsg();
         }
     }
@@ -259,17 +245,13 @@ public class PeerHandler extends Thread {
         BitfieldMessage bitfieldMessage = new BitfieldMessage(msg);
         // Set connected peer's bit field for the first time
         this.peerConnected.setBitfield(bitfieldMessage.getBitfield());
-
         // send hosts bitfield back
         sendBitfieldMsg();
-
         // Send interested / Not interested msgs back
-        if(checkIfInterested_bitfield(bitfieldMessage.getBitfield()))
-        {
+        if(checkIfInterested_bitfield(bitfieldMessage.getBitfield())) {
             sendInterestedMsg();
         }
-        else
-        {
+        else {
             sendNotInterestedMsg();
         }
     }
@@ -288,7 +270,6 @@ public class PeerHandler extends Thread {
         // dont transmit
         byte[] rcvChokeMsg = new byte[10];
         ChokeMessage chokeMessage = new ChokeMessage(rcvChokeMsg);
-        //TODO any blocking required?  STOP Requesting for pieces
         gotChoked = true;
     }
 
@@ -297,8 +278,7 @@ public class PeerHandler extends Thread {
         // send 'request' msg here
         gotChoked = false;
         // TODO select one pice from interesting pieces and start requesting till unchoke is received
-        // TODO call from DJ's utility chunks I'm INterested In.
-        List<Integer> interestingPieces = new ArrayList<>();
+        List<Integer> interestingPieces = parent.myFileHandler.chunksIAmInterestedInFromPeer(peerConnected.getBitfield());
         if(interestingPieces.isEmpty()) {
             // that peer unchoked me but I am no longer interested in any of it's pieces
             sendNotInterestedMsg();
@@ -314,7 +294,6 @@ public class PeerHandler extends Thread {
                 sendRequestMsg(pieceIdRequested);
             else
                 sendNotInterestedMsg();
-
         }
     }
 
@@ -322,33 +301,37 @@ public class PeerHandler extends Thread {
         // check the requested piece id
         // if you have it send 'piece msg' with payload
         RequestMessage requestMessage = new RequestMessage(msg);
-        //byte[] requestedpiece = parent.generateByteFromBinaryString(requestMessage.getPieceIndex());
         int requestedPieceIndex = requestMessage.getPieceIndex();
-
-        if(checkIfHave(requestedPieceIndex))
-        {
-            // TODO check how to store corres. chunk of pieceId in bytes
-        //    sendPieceMsg(requestedPieceIndex); with content (that piece)
+        if(checkIfHave(requestedPieceIndex)) {
+            sendPieceMsg(requestedPieceIndex);
         }
     }
 
     public void receivePieceMsg(byte[] msg){
-        // download the piece
-        // update parents bit field on completion
         // call 'completePieceReceived'
-        // check next piece of interest as well, and if so send 'request' else
-        // send 'not interested'
         PieceMessage pieceMessage = new PieceMessage(msg);
-        parent.updateMyBitfiled(1); //should be parent or peer ? peer right ?
-        //if(any pieces needed) - keep a function to find the missing pieces in peer
-        //and also it should not be requested if it has already been requested to someone else
-        //{
-            //sendRequestMsg();
-        //}
-        //else
-        //{
-            //sendNotInterestedMsg();
-        //}
+        int pieceIndex = pieceMessage.getPieceIndex();
+        byte[] chunk = pieceMessage.getPieceContent();
+
+        parent.myFileHandler.putChunk(pieceIndex, chunk);
+        parent.myFileHandler.updateMyBitfiled(pieceIndex);
+        if(!gotChoked) {
+            List<Integer> interestedPieceList = parent.myFileHandler.chunksIAmInterestedInFromPeer(peerConnected.getBitfield());
+            if (interestedPieceList.isEmpty()) {
+                sendNotInterestedMsg();
+            } else {
+                boolean gotPiece = false;
+                int pieceIdRequested = -1;
+                while (!gotPiece) {
+                    pieceIdRequested = interestedPieceList.remove(0); // always first piece
+                    gotPiece = !(parent.checkRequestedStatus(pieceIdRequested));
+                }
+                if (pieceIdRequested != -1)
+                    sendRequestMsg(pieceIdRequested);
+                else
+                    sendNotInterestedMsg();
+            }
+        }
     }
 
     public void completePieceReceived(){
@@ -360,6 +343,3 @@ public class PeerHandler extends Thread {
     }
 
 }
-
-//    private void sendMessage(byte[] msgToSend) {
-//    }

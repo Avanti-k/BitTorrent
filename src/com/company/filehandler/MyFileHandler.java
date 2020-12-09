@@ -35,6 +35,7 @@ public class MyFileHandler {
         }
 
     }
+    // Missing pieces
     public List<Integer> chunksIWant(){
         BitSet myBitSet = BitSet.valueOf(bitField);
         List<Integer> list = new ArrayList<Integer>();
@@ -48,7 +49,7 @@ public class MyFileHandler {
 
 
 
-    public List<Integer> chunksIAmInterestedIn(byte[] peerBitField){
+    public List<Integer> chunksIAmInterestedInFromPeer(byte[] peerBitField){
         BitSet peerBitSet = BitSet.valueOf(peerBitField);
         BitSet myBitSet = BitSet.valueOf(bitField);
         List<Integer> list = new ArrayList<>();

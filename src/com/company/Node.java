@@ -1,6 +1,7 @@
 package com.company;
 
 import com.company.filehandler.PeerInfoHandler;
+import com.company.filehandler.MyFileHandler;
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -39,6 +40,7 @@ public class Node extends Thread{
     int k = 0, m = 0, p = 0; //define in commonconfig file later
     Lock bitfieldLock;
     Lock isRequestedLock;
+    MyFileHandler myFileHandler;
 
     public Node()
     {
@@ -46,10 +48,10 @@ public class Node extends Thread{
         preferredPeers = new HashSet<>();
         interestedPeerList = new ArrayList<>();
         bitfieldLock = new ReentrantLock();
-        myBitfield = new byte[2]; // TODO not sure if 2 or 4 bytes
+        myBitfield = new byte[2]; // TODO change this DJ utility
         isRequestedLock = new ReentrantLock();
-
-
+        myFileHandler = new MyFileHandler(true); // TODO DJ read from cfg file
+        
     }
 
 
