@@ -260,69 +260,69 @@ public class Node extends Thread{
         int K = getk();
         Thread thread = new Thread() {
             public void run() {
-                System.out.println("Thread for selecting preferred peer Running");
-                //select preferred neighbors
-                //sort interested peers in dec order of their downloading rate
-                //for those peers, who is not there in the map - did this - check if its correct
-                if(!node.interestedPeers.isEmpty()) {
-                    List<Integer> interestedPeerList = new ArrayList<Integer>(node.interestedPeers);
-                    if(!node.myFileHandler.checkIfFinish()) {
-                        Collections.sort(interestedPeerList, new Comparator<Integer>() {
-                            public int compare(Integer i1, Integer i2) {
-                                if (!getPeerIDtoDownloadRate().containsKey(i1))
-                                    getPeerIDtoDownloadRate().put(i1, 0);
-                                if (!getPeerIDtoDownloadRate().containsKey(i2))
-                                    getPeerIDtoDownloadRate().put(i2, 0);
-                                return getPeerIDtoDownloadRate().get(i2) - getPeerIDtoDownloadRate().get(i1);
-                            }
-                        });
-                    }
-                    else
-                    {
-                        Collections.shuffle(interestedPeerList);
-                    }
-                    //update preferred peer list
-                    if (interestedPeerList.size() < K) {
-                        List<Integer> first = new ArrayList<>(interestedPeerList.subList(0, interestedPeerList.size()));
-                        HashSet<Integer> tSet = new HashSet<Integer>();
-                        tSet.addAll(first);
-                        setpreferredPeers(tSet);
-                    } else {
-                        List<Integer> first1 = new ArrayList<>(interestedPeerList.subList(0, K));
-                        HashSet<Integer> tSet1 = new HashSet<Integer>();
-                        tSet1.addAll(first1);
-                        setpreferredPeers(tSet1);
-                    }
-                    //choke or unchoke them (only k) based on their current state
-
-                    //unchoking selected ones
-                    for (int PreferredPeer : node.preferredPeers) {
-                        if (!getunchokedPeers().contains(PreferredPeer)) //if previously not choked //opt selected peer selected and choked separately
-                        {
-                            node.unchokedPeers.add(PreferredPeer);
-                            node.ChokedPeers.remove(PreferredPeer);
-                            node.PeerMap.get(PreferredPeer).commandQueue.add(Constants.UNCHOKE);
+                while(true) {
+                    System.out.println("Thread for selecting preferred peer Running");
+                    //select preferred neighbors
+                    //sort interested peers in dec order of their downloading rate
+                    //for those peers, who is not there in the map - did this - check if its correct
+                    if (!node.interestedPeers.isEmpty()) {
+                        List<Integer> interestedPeerList = new ArrayList<Integer>(node.interestedPeers);
+                        if (!node.myFileHandler.checkIfFinish()) {
+                            Collections.sort(interestedPeerList, new Comparator<Integer>() {
+                                public int compare(Integer i1, Integer i2) {
+                                    if (!getPeerIDtoDownloadRate().containsKey(i1))
+                                        getPeerIDtoDownloadRate().put(i1, 0);
+                                    if (!getPeerIDtoDownloadRate().containsKey(i2))
+                                        getPeerIDtoDownloadRate().put(i2, 0);
+                                    return getPeerIDtoDownloadRate().get(i2) - getPeerIDtoDownloadRate().get(i1);
+                                }
+                            });
+                        } else {
+                            Collections.shuffle(interestedPeerList);
                         }
-                    }
+                        //update preferred peer list
+                        if (interestedPeerList.size() < K) {
+                            List<Integer> first = new ArrayList<>(interestedPeerList.subList(0, interestedPeerList.size()));
+                            HashSet<Integer> tSet = new HashSet<Integer>();
+                            tSet.addAll(first);
+                            setpreferredPeers(tSet);
+                        } else {
+                            List<Integer> first1 = new ArrayList<>(interestedPeerList.subList(0, K));
+                            HashSet<Integer> tSet1 = new HashSet<Integer>();
+                            tSet1.addAll(first1);
+                            setpreferredPeers(tSet1);
+                        }
+                        //choke or unchoke them (only k) based on their current state
 
-                    //choking not selected connections
-                    for (int unchokedPeer : node.unchokedPeers) {
-                        if (!node.preferredPeers.contains(unchokedPeer)) {
-                            if (unchokedPeer != node.OptimisticallySelectedPeer) {
-                                node.unchokedPeers.remove(unchokedPeer);
-                                node.ChokedPeers.add(unchokedPeer);
-                                node.PeerMap.get(unchokedPeer).commandQueue.add(Constants.CHOKE);
+                        //unchoking selected ones
+                        for (int PreferredPeer : node.preferredPeers) {
+                            if (!getunchokedPeers().contains(PreferredPeer)) //if previously not choked //opt selected peer selected and choked separately
+                            {
+                                node.unchokedPeers.add(PreferredPeer);
+                                node.ChokedPeers.remove(PreferredPeer);
+                                node.PeerMap.get(PreferredPeer).commandQueue.add(Constants.UNCHOKE);
                             }
                         }
-                    }
-                    // set the downloading rate map to zero again for calculation for next cycle
-                    node.PeerIDtoDownloadRate.clear();
-                }
-                try {
-                    Thread.sleep(getp()*1000); // p = unchoking interval
 
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                        //choking not selected connections
+                        for (int unchokedPeer : node.unchokedPeers) {
+                            if (!node.preferredPeers.contains(unchokedPeer)) {
+                                if (unchokedPeer != node.OptimisticallySelectedPeer) {
+                                    node.unchokedPeers.remove(unchokedPeer);
+                                    node.ChokedPeers.add(unchokedPeer);
+                                    node.PeerMap.get(unchokedPeer).commandQueue.add(Constants.CHOKE);
+                                }
+                            }
+                        }
+                        // set the downloading rate map to zero again for calculation for next cycle
+                        node.PeerIDtoDownloadRate.clear();
+                    }
+                    try {
+                        Thread.sleep(getp() * 1000); // p = unchoking interval
+
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         };
@@ -335,23 +335,25 @@ public class Node extends Thread{
         Node node = this;
         Thread thread = new Thread(){
             public void run() {
-                System.out.println("Thread for selecting optimistic unchoked peer Running");
-                //select opt unchoked neighbor
-                if (getChokedPeers() == null) {
-                    node.OptimisticallySelectedPeer = 0; //or what to keep ?
-                } else {
-                    HashSet<Integer> temp = getChokedPeers();
-                    temp.retainAll(getinterestedPeerList());
-                    List<Integer> tempList = new ArrayList<Integer>(temp);
-                    Random rand = new Random();
-                    int randomElement = tempList.get(rand.nextInt(tempList.size()));
-                    setOptimisticallySelectedPeer(randomElement);
-                    node.PeerMap.get(randomElement).commandQueue.add(Constants.UNCHOKE);
-                }
-                try {
-                    Thread.sleep(getm()*1000); // m = optimistic unchoking interval
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                while(true) {
+                    System.out.println("Thread for selecting optimistic unchoked peer Running");
+                    //select opt unchoked neighbor
+                    if (getChokedPeers() == null) {
+                        node.OptimisticallySelectedPeer = 0; //or what to keep ?
+                    } else {
+                        HashSet<Integer> temp = getChokedPeers();
+                        temp.retainAll(getinterestedPeerList());
+                        List<Integer> tempList = new ArrayList<Integer>(temp);
+                        Random rand = new Random();
+                        int randomElement = tempList.get(rand.nextInt(tempList.size()));
+                        setOptimisticallySelectedPeer(randomElement);
+                        node.PeerMap.get(randomElement).commandQueue.add(Constants.UNCHOKE);
+                    }
+                    try {
+                        Thread.sleep(getm() * 1000); // m = optimistic unchoking interval
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         };
