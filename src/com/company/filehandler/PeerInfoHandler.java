@@ -3,10 +3,12 @@ package com.company.filehandler;
 import com.company.Peer;
 
 import java.io.*;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PeerInfoHandler {
     ConcurrentHashMap<Integer, Peer> peerHashMap;
+
     public String configPath;
     public static String PEERINFO_PATH = "";
     public PeerInfoHandler(){
@@ -21,6 +23,7 @@ public class PeerInfoHandler {
     public ConcurrentHashMap<Integer, Peer> getPeerHashMap() {
         return peerHashMap;
     }
+
 
     private void fileSetup() {
         try {
