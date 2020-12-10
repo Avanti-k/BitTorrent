@@ -2,6 +2,7 @@ package com.company.filehandler;
 
 import com.company.pojo.ProjectConfiguration;
 
+import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,6 +34,17 @@ public class MyFileHandler {
             bitField = set.toByteArray();
         }
 
+    }
+
+    public int numOfPiecesIHave(){
+        BitSet set = BitSet.valueOf(bitField);
+        int c = 0;
+        for(int i =0; i < set.length(); i++){
+            if(set.get(i)){
+                c++;
+            }
+        }
+        return c;
     }
     // Missing pieces
     public List<Integer> chunksIWant(){
