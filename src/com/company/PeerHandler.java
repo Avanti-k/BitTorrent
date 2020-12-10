@@ -18,7 +18,7 @@ public class PeerHandler extends Thread {
     private int clientNum;
     private boolean gotChoked = true;
     private boolean HSEstablished = false;
-    Queue<Byte> commandQueue;
+    Queue<Command> commandQueue;
 
     String message;
     PeerHandler(Socket clientSocket, Node parent){
@@ -36,14 +36,18 @@ public class PeerHandler extends Thread {
                 if(commandQueue.size() != 0)
                 {
                     // Parent has sent choke/unchoke command
-                    byte command = commandQueue.remove();
-                    if (command == Constants.CHOKE)
+                    Command command = commandQueue.remove();
+                    if (command.getType() == Constants.CHOKE)
                     {
                         sendChokeMsg();
                     }
-                    else if (command == Constants.UNCHOKE)
+                    else if (command.getType() == Constants.UNCHOKE)
                     {
                         sendUnchokedMsg();
+                    }
+                    else if (command.getType() == Constants.HAVE){
+                        int pieceId = command.getValue();
+                        sendHaveMsg(pieceId);
                     }
                 }
                 byte[] messageInBytes = (byte[])in.readObject();
@@ -150,6 +154,7 @@ public class PeerHandler extends Thread {
             // if valid get peerId for this connection
             int peerIdReceived = handshakemessage.getPeerId();
             // This is the peer connected to via this handler.
+            parent.updatePeerMap(peerIdReceived, this);
             this.peerConnected = parent.peerInfoHandler.getPeerHashMap().get(peerIdReceived);
             return true;
         }
@@ -230,13 +235,10 @@ public class PeerHandler extends Thread {
         // check and update peer's bitfield
         // send 'interested' msg to NB
         HaveMessage haveMessage = new HaveMessage(msg);
-        // ?? check and update peer's bitfield ??
-        //byte[] havepiece = parent.generateByteFromBinaryString(haveMessage.getPieceIndex());
+        //
         int havePieceId = haveMessage.getPieceIndex();
-        if(checkIfHave(havePieceId)) {
-            sendNotInterestedMsg();
-        }
-        else {
+        Util.updateBitFieldWithPiece(peerConnected.getBitfield(), havePieceId);
+        if(!checkIfHave(havePieceId)) {
             sendInterestedMsg();
         }
     }
@@ -315,6 +317,7 @@ public class PeerHandler extends Thread {
 
         parent.myFileHandler.putChunk(pieceIndex, chunk);
         parent.myFileHandler.updateMyBitfiled(pieceIndex);
+        parent.sendHavePieceUpdateToAll(pieceIndex);
         if(!gotChoked) {
             List<Integer> interestedPieceList = parent.myFileHandler.chunksIAmInterestedInFromPeer(peerConnected.getBitfield());
             if (interestedPieceList.isEmpty()) {
