@@ -332,6 +332,7 @@ public class PeerHandler extends Thread {
                     sendNotInterestedMsg();
             }
         }
+        parent.updatedownloadingrate(peerConnected.getPeerId());
     }
 
     public void completePieceReceived(){
