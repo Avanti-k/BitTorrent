@@ -23,7 +23,7 @@ public class Node extends Thread{
     Peer peer; // Host
     PeerHandler peerhandler;
     PeerInfoHandler peerInfoHandler;    // This will store handler threads against each peerId. Use this to send choke unchoke msg
-    private HashMap<Integer, PeerHandler> PeerMap = new HashMap<Integer, PeerHandler>();
+    private HashMap<Integer, PeerHandler> PeerMap = new HashMap<Integer, PeerHandler>(); // peerId: Handler thread
     private ServerSocket listeningSocket;     // it will keep accepting new connections
     private int sPort = 8000;
     private Peer[] neighbourList;          // neighbours it is connected
@@ -44,6 +44,7 @@ public class Node extends Thread{
     private int p = projectConfiguration.getUnchokingInterval();
     private HashMap<Integer, Integer> PeerIDtoDownloadRate = new HashMap<Integer, Integer>();
     Lock bitfieldLock;
+    Lock peerMapLock;
     Lock isRequestedLock;
     MyFileHandler myFileHandler;
     int selfId;
@@ -58,8 +59,9 @@ public class Node extends Thread{
         bitfieldLock = new ReentrantLock();
         isRequestedLock = new ReentrantLock();
         peerInfoHandler = new PeerInfoHandler();
+        myFileHandler = new MyFileHandler(peerInfoHandler.getPeerHashMap().get(selfId).gethaveFileInitially());
+        peerMapLock = new ReentrantLock();
 
-        myFileHandler = new MyFileHandler(peerInfoHandler.getPeerHashMap().get(selfId).gethaveFileInitially()); // TODO DJ read from cfg file
 
     }
 
@@ -85,7 +87,7 @@ public class Node extends Thread{
         int clientNum = 1;
         try {
             while(true) {
-                new PeerHandler(listeningSocket.accept(),this).start();
+                new PeerHandler(listeningSocket.accept(),this, false).start();
                 System.out.println("Client "  + clientNum + " is connected!");
                 clientNum++;
                 //TODO
@@ -140,6 +142,19 @@ public class Node extends Thread{
         return this.PeerIDtoDownloadRate;
     }
 
+    public void updatePeerMap( int peerId, PeerHandler handlerThread){
+        peerMapLock.lock();
+        PeerMap.put(peerId, handlerThread);
+        peerMapLock.unlock();
+    }
+
+    public void sendHavePieceUpdateToAll(int pieceIndex){
+        PeerHandler[] handlersSet = PeerMap.values().toArray(new PeerHandler[0]);
+        Command command = new Command(Constants.HAVE, pieceIndex);
+        for (PeerHandler peerhandler : handlersSet){
+                peerhandler.commandQueue.add(command);
+        }
+    }
     //setters for used variables
     public void setinterestedPeerList(HashSet<Integer>  interestedPeers) {
         this.interestedPeers = interestedPeers;
@@ -215,42 +230,6 @@ public class Node extends Thread{
         return resultingBitField;
     }
 
-    /* each handler thread will call it from their context
-     to update 'myBitfield' */
-//    public void updateMyBitfiled(int pieceIndex){
-//
-//        bitfieldLock.lock();
-//        try {
-//            // Do bit manipulation here
-//            BitSet bitSet = BitSet.valueOf(myBitfield);
-//            bitSet.set(pieceIndex, true);
-//            myBitfield = bitSet.toByteArray();
-//
-////            byte[] newBitField = generateByteFromBinaryString(pieceIndex);
-////            byte[] tempBitField = new byte[2];
-////
-////            // First Byte
-////            int result = myBitfield[0] | newBitField[0];
-////            tempBitField[0] = (byte)(result & 0xff); // byte is signed so use int and mask
-////            System.out.println("\n MSB | operand MSB = " + (tempBitField[0] & 0xff));
-////
-////            // Second Byte
-////            result = myBitfield[1] | newBitField[1];
-////            tempBitField[1] = (byte)(result & 0xff);
-////            System.out.println("\n LSB | operand LSB = " + (tempBitField[1] & 0xff));
-////
-////            myBitfield = tempBitField;
-////            System.out.println( "\n Updated Bit Field = " + (Util.convertBytetoInt(myBitfield) & 0xffff));
-//
-//
-//        }
-//        catch (Exception e){
-//            e.printStackTrace();
-//        }
-//        finally {
-//            bitfieldLock.unlock();
-//        }
-//    }
 
     public void updatedownloadingrate(int peerid) {
         if(getPeerIDtoDownloadRate().containsKey(peerid))
@@ -305,7 +284,7 @@ public class Node extends Thread{
                             {
                                 node.unchokedPeers.add(PreferredPeer);
                                 node.ChokedPeers.remove(PreferredPeer);
-                                node.PeerMap.get(PreferredPeer).commandQueue.add(Constants.UNCHOKE);
+                                node.PeerMap.get(PreferredPeer).commandQueue.add(new Command(Constants.UNCHOKE, -1));
                             }
                         }
 
@@ -315,7 +294,7 @@ public class Node extends Thread{
                                 if (unchokedPeer != node.OptimisticallySelectedPeer) {
                                     node.unchokedPeers.remove(unchokedPeer);
                                     node.ChokedPeers.add(unchokedPeer);
-                                    node.PeerMap.get(unchokedPeer).commandQueue.add(Constants.CHOKE);
+                                    node.PeerMap.get(unchokedPeer).commandQueue.add(new Command(Constants.CHOKE, -1));
                                 }
                             }
                         }
@@ -352,7 +331,7 @@ public class Node extends Thread{
                         Random rand = new Random();
                         int randomElement = tempList.get(rand.nextInt(tempList.size()));
                         setOptimisticallySelectedPeer(randomElement);
-                        node.PeerMap.get(randomElement).commandQueue.add(Constants.UNCHOKE);
+                        node.PeerMap.get(randomElement).commandQueue.add(new Command(Constants.UNCHOKE, -1));
                     }
                     try {
                         Thread.sleep(getm() * 1000); // m = optimistic unchoking interval
