@@ -48,6 +48,7 @@ public class Node extends Thread{
     Lock isRequestedLock;
     MyFileHandler myFileHandler;
     int selfId;
+    LoggerModule logger;
 
     public Node(int selfId)
     {
@@ -277,7 +278,7 @@ public class Node extends Thread{
                             setpreferredPeers(tSet1);
                         }
                         //choke or unchoke them (only k) based on their current state
-
+                        logger.writeLogForPreferedNeighbors(node.peer.getPeerId(), node.getpreferredPeers());
                         //unchoking selected ones
                         for (int PreferredPeer : node.preferredPeers) {
                             if (!getunchokedPeers().contains(PreferredPeer)) //if previously not choked //opt selected peer selected and choked separately
@@ -298,6 +299,7 @@ public class Node extends Thread{
                                 }
                             }
                         }
+
                         // set the downloading rate map to zero again for calculation for next cycle
                         node.PeerIDtoDownloadRate.clear();
                     }
@@ -322,9 +324,7 @@ public class Node extends Thread{
                 while(true) {
                     System.out.println("Thread for selecting optimistic unchoked peer Running");
                     //select opt unchoked neighbor
-                    if (getChokedPeers() == null) {
-                        node.OptimisticallySelectedPeer = 0; //or what to keep ?
-                    } else {
+                    if (getChokedPeers() != null) {
                         HashSet<Integer> temp = getChokedPeers();
                         temp.retainAll(getinterestedPeerList());
                         List<Integer> tempList = new ArrayList<Integer>(temp);
@@ -332,6 +332,7 @@ public class Node extends Thread{
                         int randomElement = tempList.get(rand.nextInt(tempList.size()));
                         setOptimisticallySelectedPeer(randomElement);
                         node.PeerMap.get(randomElement).commandQueue.add(new Command(Constants.UNCHOKE, -1));
+                        logger.writeLogForOptNeighbor(node.peer.getPeerId(), randomElement);
                     }
                     try {
                         Thread.sleep(getm() * 1000); // m = optimistic unchoking interval

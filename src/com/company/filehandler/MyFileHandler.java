@@ -36,7 +36,7 @@ public class MyFileHandler {
 
     }
 
-    public int numOfPiecesIHave(){
+    public int numOfChunksIHave(){
         BitSet set = BitSet.valueOf(bitField);
         int c = 0;
         for(int i =0; i < set.length(); i++){

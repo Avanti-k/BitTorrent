@@ -1,5 +1,7 @@
 package com.company;
 
+import com.company.filehandler.MyFileHandler;
+
 import java.net.Socket;
 import java.util.*;
 
@@ -12,6 +14,7 @@ public class Peer {
     private Socket connection;
     private byte[] bitfield;
     private boolean haveFileInitially;
+    MyFileHandler myFileHandler;
     Boolean unchoked = false; // maintain current status of that Neighbour
     // getters
     public int getPortNo(){
@@ -37,8 +40,6 @@ public class Peer {
     public boolean gethaveFileInitially(){
         return haveFileInitially;
     }
-
-
     // setters
 
 
