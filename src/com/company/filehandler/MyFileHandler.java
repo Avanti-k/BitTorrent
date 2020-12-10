@@ -22,7 +22,6 @@ public class MyFileHandler {
     }
 
 
-
     private void bitFieldSetUp() {
         ProjectConfiguration projectConfiguration = CommonConfigHandler.getInstance().getProjectConfiguration();
         bitField = new byte[projectConfiguration.getNumChunks()];
@@ -63,8 +62,9 @@ public class MyFileHandler {
 
 
 
-
-
+    public byte[] getBitField(){
+        return bitField;
+    }
 
 
     public  void splitFile(String fName) throws IOException {

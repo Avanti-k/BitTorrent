@@ -32,7 +32,7 @@ public class Node extends Thread{
     public boolean[] isRequested;
     private int numOfUnchokedPeers;
     // TODO add timers Peerlist update and random optimistic peer update
-    private byte[] myBitfield;
+//    private byte[] myBitfield;
     private HashSet<Integer> unchokedPeers;      // contains index of currently unchoked peers
     private HashSet<Integer> ChokedPeers;           // indices of choked peers
     private int OptimisticallySelectedPeer;
@@ -46,32 +46,37 @@ public class Node extends Thread{
     Lock bitfieldLock;
     Lock isRequestedLock;
     MyFileHandler myFileHandler;
+    int selfId;
 
-    public Node()
+    public Node(int selfId)
     {
         unchokedPeers = new HashSet<>();
+        this.selfId = selfId;
         ChokedPeers = new HashSet<>();
         preferredPeers = new HashSet<>();
         interestedPeers = new HashSet<>();
         bitfieldLock = new ReentrantLock();
-        myBitfield = new byte[2]; // TODO change this DJ utility
         isRequestedLock = new ReentrantLock();
-        myFileHandler = new MyFileHandler(true); // TODO DJ read from cfg file
+        peerInfoHandler = new PeerInfoHandler();
+
+        myFileHandler = new MyFileHandler(peerInfoHandler.getPeerHashMap().get(selfId).gethaveFileInitially()); // TODO DJ read from cfg file
 
     }
 
 
     public void run(){
         System.out.println("The server is running....");
+
         // TODO DJs utility's number of pieces extract
+
+
         int numPieces = 5; // TODO user myFilehandler dummy
-        boolean iHaveFile = true; // dummy TODO use Myfilehandler
+       // boolean iHaveFile = true; // dummy TODO use Myfilehandler
         isRequested = new boolean[numPieces];
-        if (iHaveFile)
+        if (peerInfoHandler.getPeerHashMap().get(selfId).gethaveFileInitially())
             Arrays.fill(isRequested, true);
         else
             Arrays.fill(isRequested, false);
-
         try {
             listeningSocket = new ServerSocket(sPort);
         } catch (IOException e) {
@@ -115,9 +120,9 @@ public class Node extends Thread{
     public HashSet<Integer> getChokedPeers(){
         return this.ChokedPeers;
     }
-    public byte[] getMyBitfield() {
-        return myBitfield;
-    }
+//    public byte[] getMyBitfield() {
+//        return myBitfield;
+//    }
     public int getexpectedpeerID() {
         return expectedpeerID;
     }
@@ -212,40 +217,40 @@ public class Node extends Thread{
 
     /* each handler thread will call it from their context
      to update 'myBitfield' */
-    public void updateMyBitfiled(int pieceIndex){
-
-        bitfieldLock.lock();
-        try {
-            // Do bit manipulation here
-            BitSet bitSet = BitSet.valueOf(myBitfield);
-            bitSet.set(pieceIndex, true);
-            myBitfield = bitSet.toByteArray();
-
-//            byte[] newBitField = generateByteFromBinaryString(pieceIndex);
-//            byte[] tempBitField = new byte[2];
+//    public void updateMyBitfiled(int pieceIndex){
 //
-//            // First Byte
-//            int result = myBitfield[0] | newBitField[0];
-//            tempBitField[0] = (byte)(result & 0xff); // byte is signed so use int and mask
-//            System.out.println("\n MSB | operand MSB = " + (tempBitField[0] & 0xff));
+//        bitfieldLock.lock();
+//        try {
+//            // Do bit manipulation here
+//            BitSet bitSet = BitSet.valueOf(myBitfield);
+//            bitSet.set(pieceIndex, true);
+//            myBitfield = bitSet.toByteArray();
 //
-//            // Second Byte
-//            result = myBitfield[1] | newBitField[1];
-//            tempBitField[1] = (byte)(result & 0xff);
-//            System.out.println("\n LSB | operand LSB = " + (tempBitField[1] & 0xff));
+////            byte[] newBitField = generateByteFromBinaryString(pieceIndex);
+////            byte[] tempBitField = new byte[2];
+////
+////            // First Byte
+////            int result = myBitfield[0] | newBitField[0];
+////            tempBitField[0] = (byte)(result & 0xff); // byte is signed so use int and mask
+////            System.out.println("\n MSB | operand MSB = " + (tempBitField[0] & 0xff));
+////
+////            // Second Byte
+////            result = myBitfield[1] | newBitField[1];
+////            tempBitField[1] = (byte)(result & 0xff);
+////            System.out.println("\n LSB | operand LSB = " + (tempBitField[1] & 0xff));
+////
+////            myBitfield = tempBitField;
+////            System.out.println( "\n Updated Bit Field = " + (Util.convertBytetoInt(myBitfield) & 0xffff));
 //
-//            myBitfield = tempBitField;
-//            System.out.println( "\n Updated Bit Field = " + (Util.convertBytetoInt(myBitfield) & 0xffff));
-
-
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-        finally {
-            bitfieldLock.unlock();
-        }
-    }
+//
+//        }
+//        catch (Exception e){
+//            e.printStackTrace();
+//        }
+//        finally {
+//            bitfieldLock.unlock();
+//        }
+//    }
 
     public void updatedownloadingrate(int peerid) {
         if(getPeerIDtoDownloadRate().containsKey(peerid))

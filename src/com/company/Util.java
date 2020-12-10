@@ -20,6 +20,6 @@ public class Util {
     public static String convertByteToString(byte[] input){
         return new String(input, StandardCharsets.UTF_8);
     }
-
+    //update bitfield, old bitfield, single int
 
 }

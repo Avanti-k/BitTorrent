@@ -36,6 +36,10 @@ public class PeerInfoHandler {
                 peer.setPeerId(Integer.parseInt(values[0]));
                 peer.setIpAddress(values[1]);
                 peer.setPortNo(Integer.parseInt(values[2]));
+                if(Integer.parseInt(values[3]) == 1){
+                    peer.setHaveFileInitially(true);
+
+                }
                 peerHashMap.put(peer.getPeerId(), peer);
             }
 

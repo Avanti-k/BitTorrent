@@ -11,7 +11,7 @@ public class Peer {
     private int peerId;
     private Socket connection;
     private byte[] bitfield;
-
+    private boolean haveFileInitially;
     Boolean unchoked = false; // maintain current status of that Neighbour
     // getters
     public int getPortNo(){
@@ -34,8 +34,17 @@ public class Peer {
         return this.bitfield;
     }
 
+    public boolean gethaveFileInitially(){
+        return haveFileInitially;
+    }
+
+
     // setters
 
+
+    public void setHaveFileInitially(boolean haveFileInitially) {
+        this.haveFileInitially = haveFileInitially;
+    }
 
     public void setBitfield(byte[] bitfield) {
         this.bitfield = bitfield;
@@ -52,6 +61,7 @@ public class Peer {
     public void setPeerId(int peerId) {
         this.peerId = peerId;
     }
+
 
     public void setPortNo(int portNo) {
         this.portNo = portNo;

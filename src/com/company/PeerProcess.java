@@ -10,7 +10,7 @@ public class PeerProcess {
         // initialize it give it listening socket so on.
         // Start Node
         System.out.println("\n Starting program.. \n");
-        Node system = new Node();
+        Node system = new Node(Integer.valueOf(args[0]));
         system.start();
 
     }

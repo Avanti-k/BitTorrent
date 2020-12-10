@@ -46,6 +46,7 @@ public class PeerHandler extends Thread {
                         sendUnchokedMsg();
                     }
                 }
+
                 byte[] messageInBytes = (byte[])in.readObject();
                 //show the message to the user
                 System.out.println("Receive message: " + message + " from client " + peerConnected.getPeerId());
@@ -168,7 +169,7 @@ public class PeerHandler extends Thread {
     /* Sends the nodes bitfield to peer at time of handshake */
     public void sendBitfieldMsg(){
         // Send parents bitfield to connected peer
-        BitfieldMessage bitfieldMessage = new BitfieldMessage(parent.getMyBitfield(), Constants.BITFIELD);
+        BitfieldMessage bitfieldMessage = new BitfieldMessage(parent.myFileHandler.getBitField(), Constants.BITFIELD);
         byte[] bitfieldMessageInBytes = bitfieldMessage.getMessage();
         // send over TCP
         sendMessage(bitfieldMessageInBytes);
@@ -335,12 +336,12 @@ public class PeerHandler extends Thread {
         parent.updatedownloadingrate(peerConnected.getPeerId());
     }
 
-    public void completePieceReceived(){
-        // update parents bitfield and all peers bitfield
-        // send 'not interested' msg if needed to any peer from here
-        parent.setHasCompleteFile();
-        parent.updateMyBitfiled(1);
-        // ?? how to know to which all peer send 'not interested'
-    }
+//    public void completePieceReceived(){
+//        // update parents bitfield and all peers bitfield
+//        // send 'not interested' msg if needed to any peer from here
+//        parent.setHasCompleteFile();
+//        parent.updateMyBitfiled(1);
+//        // ?? how to know to which all peer send 'not interested'
+//    }
 
 }
