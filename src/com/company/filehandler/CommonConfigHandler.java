@@ -8,6 +8,7 @@ public class CommonConfigHandler {
     public static final String CONFIG_PATH = "";
     ProjectConfiguration projectConfiguration;
     private static CommonConfigHandler instance;
+    
     private CommonConfigHandler(){
         initialize();
         setUpFile();

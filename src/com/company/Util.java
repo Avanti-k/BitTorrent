@@ -22,6 +22,7 @@ public class Util {
         return new String(input, StandardCharsets.UTF_8);
     }
 
+
     public static byte[] updateBitFieldWithPiece(byte[] oldBitField, int pieceIndex){
         BitSet set = BitSet.valueOf(oldBitField);
         set.set(pieceIndex,true);

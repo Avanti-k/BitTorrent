@@ -32,7 +32,7 @@ public class Node extends Thread{
     public boolean[] isRequested;
     private int numOfUnchokedPeers;
     // TODO add timers Peerlist update and random optimistic peer update
-    private byte[] myBitfield;
+//    private byte[] myBitfield;
     private HashSet<Integer> unchokedPeers;      // contains index of currently unchoked peers
     private HashSet<Integer> ChokedPeers;           // indices of choked peers
     private int OptimisticallySelectedPeer;
@@ -47,33 +47,38 @@ public class Node extends Thread{
     Lock peerMapLock;
     Lock isRequestedLock;
     MyFileHandler myFileHandler;
+    int selfId;
 
-    public Node()
+    public Node(int selfId)
     {
         unchokedPeers = new HashSet<>();
+        this.selfId = selfId;
         ChokedPeers = new HashSet<>();
         preferredPeers = new HashSet<>();
         interestedPeers = new HashSet<>();
         bitfieldLock = new ReentrantLock();
-        myBitfield = new byte[2]; // TODO change this DJ utility
         isRequestedLock = new ReentrantLock();
+        peerInfoHandler = new PeerInfoHandler();
+        myFileHandler = new MyFileHandler(peerInfoHandler.getPeerHashMap().get(selfId).gethaveFileInitially());
         peerMapLock = new ReentrantLock();
-        myFileHandler = new MyFileHandler(true); // TODO DJ read from cfg file
+
 
     }
 
 
     public void run(){
         System.out.println("The server is running....");
+
         // TODO DJs utility's number of pieces extract
+
+
         int numPieces = 5; // TODO user myFilehandler dummy
-        boolean iHaveFile = true; // dummy TODO use Myfilehandler
+       // boolean iHaveFile = true; // dummy TODO use Myfilehandler
         isRequested = new boolean[numPieces];
-        if (iHaveFile)
+        if (peerInfoHandler.getPeerHashMap().get(selfId).gethaveFileInitially())
             Arrays.fill(isRequested, true);
         else
             Arrays.fill(isRequested, false);
-
         try {
             listeningSocket = new ServerSocket(sPort);
         } catch (IOException e) {
@@ -82,7 +87,7 @@ public class Node extends Thread{
         int clientNum = 1;
         try {
             while(true) {
-                new PeerHandler(listeningSocket.accept(),this).start();
+                new PeerHandler(listeningSocket.accept(),this, false).start();
                 System.out.println("Client "  + clientNum + " is connected!");
                 clientNum++;
                 //TODO
@@ -117,9 +122,9 @@ public class Node extends Thread{
     public HashSet<Integer> getChokedPeers(){
         return this.ChokedPeers;
     }
-    public byte[] getMyBitfield() {
-        return myBitfield;
-    }
+//    public byte[] getMyBitfield() {
+//        return myBitfield;
+//    }
     public int getexpectedpeerID() {
         return expectedpeerID;
     }
@@ -225,25 +230,6 @@ public class Node extends Thread{
         return resultingBitField;
     }
 
-    /* each handler thread will call it from their context
-     to update 'myBitfield' */
-    public void updateMyBitfiled(int pieceIndex){
-
-        bitfieldLock.lock();
-        try {
-            // Do bit manipulation here
-            BitSet bitSet = BitSet.valueOf(myBitfield);
-            bitSet.set(pieceIndex, true);
-            myBitfield = bitSet.toByteArray();
-
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-        finally {
-            bitfieldLock.unlock();
-        }
-    }
 
     public void updatedownloadingrate(int peerid) {
         if(getPeerIDtoDownloadRate().containsKey(peerid))
