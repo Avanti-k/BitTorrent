@@ -82,7 +82,7 @@ public class Node extends Thread{
         int clientNum = 1;
         try {
             while(true) {
-                new PeerHandler(listeningSocket.accept(),this).start();
+                new PeerHandler(listeningSocket.accept(),this, false).start();
                 System.out.println("Client "  + clientNum + " is connected!");
                 clientNum++;
                 //TODO
