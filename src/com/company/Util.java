@@ -3,6 +3,7 @@ package com.company;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.BitSet;
 
 public class Util {
     public static byte[] convertIntToByte(int i){
@@ -20,6 +21,13 @@ public class Util {
     public static String convertByteToString(byte[] input){
         return new String(input, StandardCharsets.UTF_8);
     }
+
+    public static byte[] updateBitFieldWithPiece(byte[] oldBitField, int pieceIndex){
+        BitSet set = BitSet.valueOf(oldBitField);
+        set.set(pieceIndex,true);
+        return set.toByteArray();
+    }
+
 
 
 }
