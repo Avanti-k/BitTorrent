@@ -172,7 +172,7 @@ public class PeerHandler extends Thread {
             // This is the peer connected to via this handler.
             parent.updatePeerMap(peerIdReceived, this);
             this.peerConnected = parent.peerInfoHandler.getPeerHashMap().get(peerIdReceived);
-            logger.writelog(2,peerConnected.getPeerId(),parent.peer.getPeerId(),0,0);
+            logger.writelog(2,peerConnected.getPeerId(),parent.selfId,0,0);
             return true;
         }
         else
@@ -253,7 +253,7 @@ public class PeerHandler extends Thread {
         HaveMessage haveMessage = new HaveMessage(msg);
         //
         int havePieceId = haveMessage.getPieceIndex();
-        logger.writelog(5,peerConnected.getPeerId(),parent.peer.getPeerId(),havePieceId,0);
+        logger.writelog(5,peerConnected.getPeerId(),parent.selfId,havePieceId,0);
         Util.updateBitFieldWithPiece(peerConnected.getBitfield(), havePieceId);
         if(!checkIfHave(havePieceId)) {
             sendInterestedMsg();
@@ -277,13 +277,13 @@ public class PeerHandler extends Thread {
 
     public void receivedInterestedMsg(){
         // update interested peer set of parent node here
-        logger.writelog(6,peerConnected.getPeerId(),parent.peer.getPeerId(),0,0);
+        logger.writelog(6,peerConnected.getPeerId(),parent.selfId,0,0);
         parent.addtointerestedPeerList(peerConnected.getPeerId());
     }
 
     public void receivedNotInterested(){
         // if this peer was previously in interested set, remove it
-        logger.writelog(7,peerConnected.getPeerId(),parent.peer.getPeerId(),0,0);
+        logger.writelog(7,peerConnected.getPeerId(),parent.selfId,0,0);
         parent.removefrominterestedPeerList(peerConnected.getPeerId());
     }
 
@@ -292,14 +292,14 @@ public class PeerHandler extends Thread {
         byte[] rcvChokeMsg = new byte[10];
         ChokeMessage chokeMessage = new ChokeMessage(rcvChokeMsg);
         gotChoked = true;
-        logger.writelog(4,peerConnected.getPeerId(),parent.peer.getPeerId(),0,0);
+        logger.writelog(4,peerConnected.getPeerId(),parent.selfId,0,0);
     }
 
     public void receiveUnchokeMsg(){
         // find out required piece and begin transmitting.
         // send 'request' msg here
         gotChoked = false;
-        logger.writelog(3,peerConnected.getPeerId(),parent.peer.getPeerId(),0,0);
+        logger.writelog(3,peerConnected.getPeerId(),parent.selfId,0,0);
         // TODO select one pice from interesting pieces and start requesting till unchoke is received
         List<Integer> interestingPieces = parent.myFileHandler.chunksIAmInterestedInFromPeer(peerConnected.getBitfield());
         if(interestingPieces.isEmpty()) {
@@ -336,7 +336,7 @@ public class PeerHandler extends Thread {
         int pieceIndex = pieceMessage.getPieceIndex();
         byte[] chunk = pieceMessage.getPieceContent();
 
-        logger.writelog(8,peerConnected.getPeerId(),parent.peer.getPeerId(),pieceIndex,peerConnected.myFileHandler.numOfChunksIHave());
+        logger.writelog(8,peerConnected.getPeerId(),parent.selfId,pieceIndex,peerConnected.myFileHandler.numOfChunksIHave());
 
         parent.myFileHandler.putChunk(pieceIndex, chunk);
         parent.myFileHandler.updateMyBitfiled(pieceIndex);
