@@ -1,9 +1,7 @@
 package com.company;
 
-import java.awt.desktop.SystemEventListener;
 import java.net.*;
 import java.io.*;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -38,7 +36,7 @@ public class PeerHandler extends Thread {
             in = new ObjectInputStream(connection.getInputStream());
 
             if (amIInitiator) {
-                sendHandshakeMsg(parent.peer.getPeerId());
+                sendHandshakeMsg(parent.selfPeer.getPeerId());
             }
 
             while (true) {
@@ -75,7 +73,7 @@ public class PeerHandler extends Thread {
                         boolean isValid = receiveHandshakeMsg(messageInBytes);
                         if (isValid) {
                             if (!amIInitiator) {
-                                sendHandshakeMsg(parent.peer.getPeerId());
+                                sendHandshakeMsg(parent.selfPeer.getPeerId());
                             }
                             HSEstablished = true;
                             // TODO log connection established here

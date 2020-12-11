@@ -20,7 +20,7 @@ import com.company.filehandler.CommonConfigHandler;
 // one new peer handler per peer.
 
 public class Node extends Thread{
-    Peer peer; // Host
+    Peer selfPeer; // Host
     PeerHandler peerhandler;
     PeerInfoHandler peerInfoHandler;    // This will store handler threads against each peerId. Use this to send choke unchoke msg
     private HashMap<Integer, PeerHandler> PeerMap = new HashMap<Integer, PeerHandler>(); // peerId: Handler thread
@@ -64,6 +64,7 @@ public class Node extends Thread{
         myFileHandler = new MyFileHandler(peerInfoHandler.getPeerHashMap().get(selfId).gethaveFileInitially());
         peerMapLock = new ReentrantLock();
         sPort = peerInfoHandler.getPeerHashMap().get(selfId).getPortNo();
+        selfPeer = peerInfoHandler.getPeerHashMap().get(selfId);
 
 
     }
@@ -326,7 +327,7 @@ public class Node extends Thread{
                             setpreferredPeers(tSet1);
                         }
                         //choke or unchoke them (only k) based on their current state
-                        logger.writeLogForPreferedNeighbors(node.peer.getPeerId(), node.getpreferredPeers());
+                        logger.writeLogForPreferedNeighbors(node.selfPeer.getPeerId(), node.getpreferredPeers());
                         //unchoking selected ones
                         for (int PreferredPeer : node.preferredPeers) {
                             if (!getunchokedPeers().contains(PreferredPeer)) //if previously not choked //opt selected peer selected and choked separately
@@ -380,7 +381,7 @@ public class Node extends Thread{
                         int randomElement = tempList.get(rand.nextInt(tempList.size()));
                         setOptimisticallySelectedPeer(randomElement);
                         node.PeerMap.get(randomElement).commandQueue.add(new Command(Constants.UNCHOKE, -1));
-                        logger.writeLogForOptNeighbor(node.peer.getPeerId(), randomElement);
+                        logger.writeLogForOptNeighbor(node.selfPeer.getPeerId(), randomElement);
                     }
                     try {
                         Thread.sleep(getm() * 1000); // m = optimistic unchoking interval
