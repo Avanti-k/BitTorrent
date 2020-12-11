@@ -115,6 +115,7 @@ public class MyFileHandler {
                 try (FileOutputStream out = new FileOutputStream(newFile)) {
                     out.write(buffer, 0, bytesAmount);
                 }
+                partCounter++;
             }
         }
     }
