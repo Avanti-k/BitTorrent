@@ -74,6 +74,8 @@ public class PeerHandler extends Thread {
                         if (isValid) {
                             if (!amIInitiator) {
                                 sendHandshakeMsg(parent.selfPeer.getPeerId());
+                            }else{
+                                sendBitfieldMsg();
                             }
                             HSEstablished = true;
                             // TODO log connection established here
@@ -272,7 +274,10 @@ public class PeerHandler extends Thread {
         // Set connected peer's bit field for the first time
         this.peerConnected.setBitfield(bitfieldMessage.getBitfield());
         // send hosts bitfield back
-        sendBitfieldMsg();
+        if(!amIInitiator){
+            sendBitfieldMsg();
+
+        }
         // Send interested / Not interested msgs back
         if(checkIfInterested_bitfield(bitfieldMessage.getBitfield())) {
             sendInterestedMsg();

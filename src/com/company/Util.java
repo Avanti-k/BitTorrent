@@ -30,5 +30,9 @@ public class Util {
     }
 
 
+   public static int convertNumBitsToNumBytes(int i){
+        return (int) Math.ceil((double) i/8d);
+   }
+
 
 }
