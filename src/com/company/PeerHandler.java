@@ -64,10 +64,10 @@ public class PeerHandler extends Thread {
 
 
 
-                if( in.available() > 0) {
+                if( true) {
                     byte[] messageInBytes = (byte[]) in.readObject();
                     //show the message to the user
-                    System.out.println("Receive message: " + message + " from client " + peerConnected.getPeerId());
+             //       System.out.println("Receive message: " + message + " from client " + peerConnected.getPeerId());
 
                     if (!HSEstablished) {
                         boolean isValid = receiveHandshakeMsg(messageInBytes);
