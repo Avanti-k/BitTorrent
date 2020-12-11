@@ -5,7 +5,7 @@ import com.company.pojo.ProjectConfiguration;
 import java.io.*;
 
 public class CommonConfigHandler {
-    public static final String CONFIG_PATH = "";
+    public static final String CONFIG_PATH = "Common.cfg";
     ProjectConfiguration projectConfiguration;
     private static CommonConfigHandler instance;
     

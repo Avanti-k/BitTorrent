@@ -19,19 +19,33 @@ public class MyFileHandler {
     boolean iHaveFile;
     public MyFileHandler(Boolean iHaveFile){
         this.iHaveFile = iHaveFile;
+
         bitFieldSetUp();
+        if(iHaveFile){
+            try {
+                splitFile(CommonConfigHandler.getInstance().getProjectConfiguration().getFileName());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
     private void bitFieldSetUp() {
         ProjectConfiguration projectConfiguration = CommonConfigHandler.getInstance().getProjectConfiguration();
         bitField = new byte[projectConfiguration.getNumChunks()];
-        if(iHaveFile){
-            BitSet set = BitSet.valueOf(bitField);
-            for(int i = 0; i < projectConfiguration.getNumChunks(); i++){
-                set.set(i,true);
+        try {
+            if(iHaveFile){
+                BitSet set = BitSet.valueOf(bitField);
+                for(int i = 0; i < projectConfiguration.getNumChunks(); i++){
+                    set.set(i,true);
+                }
+                bitField = set.toByteArray();
+                splitFile(CommonConfigHandler.getInstance().getProjectConfiguration().getFileName());
             }
-            bitField = set.toByteArray();
+        } catch (IOException e) {
+            System.out.println("Error with splitting the file");
+            e.printStackTrace();
         }
 
     }

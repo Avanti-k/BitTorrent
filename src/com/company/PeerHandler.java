@@ -28,7 +28,6 @@ public class PeerHandler extends Thread {
         this.connection = clientSocket;
         this.amIInitiator = amIInitiator;
         commandQueue = new LinkedList<>();
-
     }
 
     public void run(){
@@ -38,9 +37,15 @@ public class PeerHandler extends Thread {
             out.flush();
             in = new ObjectInputStream(connection.getInputStream());
 
+            if (amIInitiator) {
+                sendHandshakeMsg(parent.peer.getPeerId());
+            }
+
             while (true) {
                 //receive the message sent from the client
                 // check in command queue if any command from node is received
+
+
                 if(commandQueue.size() != 0)
                 {
                     // Parent has sent choke/unchoke command
@@ -59,6 +64,8 @@ public class PeerHandler extends Thread {
                     }
                 }
 
+
+
                 if( in.available() > 0) {
                     byte[] messageInBytes = (byte[]) in.readObject();
                     //show the message to the user
@@ -67,7 +74,9 @@ public class PeerHandler extends Thread {
                     if (!HSEstablished) {
                         boolean isValid = receiveHandshakeMsg(messageInBytes);
                         if (isValid) {
-                            sendHandshakeMsg(parent.peer.getPeerId());
+                            if (!amIInitiator) {
+                                sendHandshakeMsg(parent.peer.getPeerId());
+                            }
                             HSEstablished = true;
                             // TODO log connection established here
                         }
