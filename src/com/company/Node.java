@@ -372,7 +372,7 @@ public class Node extends Thread{
                 while(true) {
                     System.out.println("Thread for selecting optimistic unchoked peer Running");
                     //select opt unchoked neighbor
-                    if (getChokedPeers() != null) {
+                    if (!getChokedPeers().isEmpty()) {
                         HashSet<Integer> temp = getChokedPeers();
                         temp.retainAll(getinterestedPeerList());
                         List<Integer> tempList = new ArrayList<Integer>(temp);
