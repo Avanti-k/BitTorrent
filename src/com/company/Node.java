@@ -32,7 +32,8 @@ public class Node extends Thread{
     public boolean[] isRequested;
     private int numOfUnchokedPeers;
     // TODO add timers Peerlist update and random optimistic peer update
-//    private byte[] myBitfield;
+    // private byte[] myBitfield;
+
     private HashSet<Integer> unchokedPeers;      // contains index of currently unchoked peers
     private HashSet<Integer> ChokedPeers;           // indices of choked peers
     private int OptimisticallySelectedPeer;
@@ -59,9 +60,10 @@ public class Node extends Thread{
         interestedPeers = new HashSet<>();
         bitfieldLock = new ReentrantLock();
         isRequestedLock = new ReentrantLock();
-        peerInfoHandler = new PeerInfoHandler();
+        peerInfoHandler = new PeerInfoHandler(selfId);
         myFileHandler = new MyFileHandler(peerInfoHandler.getPeerHashMap().get(selfId).gethaveFileInitially());
         peerMapLock = new ReentrantLock();
+        sPort = peerInfoHandler.getPeerHashMap().get(selfId).getPortNo();
 
 
     }
@@ -69,43 +71,89 @@ public class Node extends Thread{
 
     public void run(){
         System.out.println("The server is running....");
-
-        // TODO DJs utility's number of pieces extract
-
-
-        int numPieces = 5; // TODO user myFilehandler dummy
-       // boolean iHaveFile = true; // dummy TODO use Myfilehandler
+        int numPieces = projectConfiguration.getNumChunks(); // TODO user myFilehandler dummy
         isRequested = new boolean[numPieces];
-        if (peerInfoHandler.getPeerHashMap().get(selfId).gethaveFileInitially())
+        boolean toConnectPrevious = true;
+
+        if (peerInfoHandler.getPeerHashMap().get(selfId).gethaveFileInitially()) {
             Arrays.fill(isRequested, true);
-        else
+        }
+        else {
             Arrays.fill(isRequested, false);
+        }
+
         try {
             listeningSocket = new ServerSocket(sPort);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        int clientNum = 1;
-        try {
+            int clientNum = 1;
             while(true) {
+                if(toConnectPrevious){
+                    connectToMyPreviousPeers();
+                    toConnectPrevious = false;
+                }
                 new PeerHandler(listeningSocket.accept(),this, false).start();
                 System.out.println("Client "  + clientNum + " is connected!");
                 clientNum++;
-                //TODO
-                // add timers and then timout logic here
-            }
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-        finally {
-            try {
+
+
+                    //TODO
+                    // add timers and then timout logic here
+
+                updatePreferedPeerList();
+                updateOptimisticallyUnchokedPeer();
+
+
+
+                }
+        } catch (IOException e) {
+            try{
                 listeningSocket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+
             }
+            catch (Exception f){
+                f.printStackTrace();
+            }
+        } finally {
         }
+
+
     }
+//        catch (Exception e){
+//            e.printStackTrace();
+//        }
+//        finally {
+//            try {
+//                listeningSocket.close();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+   // }
+
+    public void connectToMyPreviousPeers(){
+        HashMap<Integer,Peer> peersNeedToConnect = peerInfoHandler.getPeersBeforeMe();
+
+        Thread connectorThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for(Peer peer : peersNeedToConnect.values()){
+                    try {
+                        Socket socket = new Socket(peer.getIpAddress(), peer.getPortNo());
+                        new PeerHandler(socket,Node.this, true);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+        });
+
+        connectorThread.start();
+
+
+    }
+
+
+
     //getters & setters can be added if needed later.
     //getters for used variables
     public HashSet<Integer> getinterestedPeerList(){
@@ -324,7 +372,7 @@ public class Node extends Thread{
                 while(true) {
                     System.out.println("Thread for selecting optimistic unchoked peer Running");
                     //select opt unchoked neighbor
-                    if (getChokedPeers() != null) {
+                    if (!getChokedPeers().isEmpty()) {
                         HashSet<Integer> temp = getChokedPeers();
                         temp.retainAll(getinterestedPeerList());
                         List<Integer> tempList = new ArrayList<Integer>(temp);
