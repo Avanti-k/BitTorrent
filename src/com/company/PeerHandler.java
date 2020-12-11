@@ -18,7 +18,7 @@ public class PeerHandler extends Thread {
     private boolean HSEstablished = false;
     private boolean amIInitiator;
     Queue<Command> commandQueue;
-    LoggerModule logger;
+    LoggerModule logger = new LoggerModule();;
 
     String message;
     PeerHandler(Socket clientSocket, Node parent, boolean amIInitiator){
@@ -64,16 +64,18 @@ public class PeerHandler extends Thread {
 
 
 
-                if( in.available() > 0) {
+                if( true) {
                     byte[] messageInBytes = (byte[]) in.readObject();
                     //show the message to the user
-                    System.out.println("Receive message: " + message + " from client " + peerConnected.getPeerId());
+             //       System.out.println("Receive message: " + message + " from client " + peerConnected.getPeerId());
 
                     if (!HSEstablished) {
                         boolean isValid = receiveHandshakeMsg(messageInBytes);
                         if (isValid) {
                             if (!amIInitiator) {
                                 sendHandshakeMsg(parent.selfPeer.getPeerId());
+                            }else{
+                                sendBitfieldMsg();
                             }
                             HSEstablished = true;
                             // TODO log connection established here
@@ -161,7 +163,7 @@ public class PeerHandler extends Thread {
     public boolean checkHandshakeHeader(HandshakeMessage msg){
 
         //check peer ID is the expected one.
-        if(msg.header != "P2PFILESHARINGPROJ" || msg.getPeerId() != parent.getexpectedpeerID())
+        if(msg.header.compareTo("P2PFILESHARINGPROJ")  != 0)
         {
             return false;
         }
@@ -272,7 +274,10 @@ public class PeerHandler extends Thread {
         // Set connected peer's bit field for the first time
         this.peerConnected.setBitfield(bitfieldMessage.getBitfield());
         // send hosts bitfield back
-        sendBitfieldMsg();
+        if(!amIInitiator){
+            sendBitfieldMsg();
+
+        }
         // Send interested / Not interested msgs back
         if(checkIfInterested_bitfield(bitfieldMessage.getBitfield())) {
             sendInterestedMsg();
