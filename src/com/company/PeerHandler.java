@@ -18,7 +18,7 @@ public class PeerHandler extends Thread {
     private boolean HSEstablished = false;
     private boolean amIInitiator;
     Queue<Command> commandQueue;
-    LoggerModule logger;
+    LoggerModule logger = new LoggerModule();;
 
     String message;
     PeerHandler(Socket clientSocket, Node parent, boolean amIInitiator){
@@ -161,7 +161,7 @@ public class PeerHandler extends Thread {
     public boolean checkHandshakeHeader(HandshakeMessage msg){
 
         //check peer ID is the expected one.
-        if(msg.header != "P2PFILESHARINGPROJ" || msg.getPeerId() != parent.getexpectedpeerID())
+        if(msg.header.compareTo("P2PFILESHARINGPROJ")  != 0)
         {
             return false;
         }

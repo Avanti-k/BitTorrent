@@ -49,7 +49,7 @@ public class Node extends Thread{
     Lock isRequestedLock;
     MyFileHandler myFileHandler;
     int selfId;
-    LoggerModule logger;
+    LoggerModule logger = new LoggerModule();
 
     public Node(int selfId)
     {

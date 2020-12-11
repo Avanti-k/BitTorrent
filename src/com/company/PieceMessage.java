@@ -28,7 +28,7 @@ public class PieceMessage extends Message{
             index++;
         }
         index = 0;
-        for(; i < this.messagePayload.length; i++){
+        for(; i < 4+this.messagePayload.length; i++){
             piece[index] = this.messagePayload[i];
             index++;
         }
