@@ -138,7 +138,7 @@ public class Node extends Thread{
                 for(Peer peer : peersNeedToConnect.values()){
                     try {
                         Socket socket = new Socket(peer.getIpAddress(), peer.getPortNo());
-                        new PeerHandler(socket,Node.this, true);
+                        new PeerHandler(socket,Node.this, true).start();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
