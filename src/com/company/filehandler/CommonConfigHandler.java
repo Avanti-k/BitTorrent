@@ -32,6 +32,7 @@ public class CommonConfigHandler {
     private void setUpFile() {
         FileInputStream fileInputStream = null;
         try {
+            projectConfiguration = new ProjectConfiguration();
             fileInputStream = new FileInputStream(CONFIG_PATH);
             BufferedReader br = new BufferedReader( new InputStreamReader(fileInputStream));
             //NumberOfPreferredNeighbors
