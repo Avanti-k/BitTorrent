@@ -60,7 +60,7 @@ public class CommonConfigHandler {
             values =  string.split("\\s+");
             projectConfiguration.setPieceSize(Integer.parseInt(values[1]));
 
-            // TODO DJ ceil
+
             int numChunks =  (int) Math.ceil((double) projectConfiguration.getFileSize()/  (double) projectConfiguration.getPieceSize());
             projectConfiguration.setNumChunks(numChunks);
 

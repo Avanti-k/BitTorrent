@@ -16,6 +16,41 @@ public class Simulator {
         Node node2 = new Node(1002);
         node2.start();
 
+        Node node3 = new Node(1003);
+        node3.start();
+
+        Node node4 = new Node(1004);
+        node4.start();
+
+
+        Node node5 = new Node(1005);
+        node5.start();
+
+
+        Node node6 = new Node(1006);
+        node6.start();
+
+
+
+        Node node7 = new Node(1007);
+        node7.start();
+
+
+        Node node8 = new Node(1008);
+        node8.start();
+
+
+        Node node9 = new Node(1009);
+        node9.start();
+
+//
+//        Node node3 = new Node(1003);
+//        node3.start();
+//
+//
+//        Node node3 = new Node(1003);
+//        node3.start();
+
 
 //
 //

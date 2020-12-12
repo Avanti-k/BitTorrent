@@ -13,7 +13,7 @@ public class BitfieldMessage extends Message{
     }
     public BitfieldMessage(byte[] bitfield, byte type){
         super( bitfield, Constants.BITFIELD);
-        this.bitfield = new byte[Util.convertNumBitsToNumBytes(CommonConfigHandler.getInstance().getProjectConfiguration().getNumChunks())];
+        this.bitfield = bitfield;
         parsePayload();
     }
 

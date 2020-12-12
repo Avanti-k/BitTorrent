@@ -24,12 +24,14 @@ public class PeerHandler extends Thread {
     PeerHandler(Socket clientSocket, Node parent, boolean amIInitiator){
         this.parent = parent;
         this.connection = clientSocket;
+        int someTimeout = 1000;
         this.amIInitiator = amIInitiator;
         commandQueue = new LinkedList<>();
     }
 
     public void run(){
-        System.out.println(currentThread().getName() + " : One peer Handler thread started.. Initiator =  " + amIInitiator);
+        System.out.println(currentThread().getName() + " : peer Handler thread started.. Initiator =  " + amIInitiator
+            + " started by thread = " + parent.selfPeer.getPeerId());
         try {
             out = new ObjectOutputStream(connection.getOutputStream());
             out.flush();
@@ -43,97 +45,107 @@ public class PeerHandler extends Thread {
             System.out.println(currentThread().getName() + " Before whiile =  " + amIInitiator);
 
             while (true) {
-                //receive the message sent from the client
-                // check in command queue if any command from node is received
+                try {
+                    //receive the message sent from the client
+                    // check in command queue if any command from node is received
 
 
-                if(commandQueue.size() != 0)
-                {
-                    // Parent has sent choke/unchoke command
-                    Command command = commandQueue.remove();
-                    if (command.getType() == Constants.CHOKE)
+                    if(commandQueue.size() != 0)
                     {
-                        sendChokeMsg();
+                        // Parent has sent choke/unchoke command
+                        Command command = commandQueue.remove();
+                        if (command.getType() == Constants.CHOKE)
+                        {
+                            sendChokeMsg();
+                        }
+                        else if (command.getType() == Constants.UNCHOKE)
+                        {
+                            sendUnchokedMsg();
+                        }
+                        else if (command.getType() == Constants.HAVE){
+                            int pieceId = command.getValue();
+                            sendHaveMsg(pieceId);
+                        }
                     }
-                    else if (command.getType() == Constants.UNCHOKE)
-                    {
-                        sendUnchokedMsg();
-                    }
-                    else if (command.getType() == Constants.HAVE){
-                        int pieceId = command.getValue();
-                        sendHaveMsg(pieceId);
-                    }
+
+                    //System.out.println(currentThread().getName() + " Inside whiile =  " + amIInitiator);
+
+
+                    if(true) {
+
+                        System.out.println(" Inside available =  " + currentThread().getName());
+                        connection.setSoTimeout(1000);
+
+
+                        byte[] messageInBytes = (byte[]) in.readObject();
+                        //show the message to the user
+                        System.out.println(currentThread().getName() + " :Receive message: " + messageInBytes + " from client ");
+
+                        if (!HSEstablished) {
+                            boolean isValid = receiveHandshakeMsg(messageInBytes);
+                            if (isValid) {
+                                if (!amIInitiator) {
+                                    sendHandshakeMsg(parent.selfPeer.getPeerId());
+                                }else{
+                                    sendBitfieldMsg();
+                                }
+                                HSEstablished = true;
+                                // TODO log connection established here
+                            }
+                        } else {
+                            Message message = new Message(messageInBytes);
+                            switch (message.getMessageType()) {
+                                case Constants.CHOKE:
+                                    receiveChokeMsg();
+                                    break;
+                                case Constants.UNCHOKE:
+                                    receiveUnchokeMsg();
+                                    break;
+                                case Constants.INTERESTED:
+                                    receivedInterestedMsg();
+                                    break;
+                                case Constants.NOT_INTERESTED:
+                                    receivedNotInterested();
+                                    break;
+                                case Constants.HAVE:
+                                    receivedHaveMsg(messageInBytes);
+                                    break;
+                                case Constants.BITFIELD:
+                                    receiveBitfield(messageInBytes);
+                                    break;
+                                case Constants.REQUEST:
+                                    receiveRequestMsg(messageInBytes);
+                                    break;
+                                case Constants.PIECE:
+                                    receivePieceMsg(messageInBytes);
+                                    break;
+                                default:
+                                    System.out.println("\n INVALID MESSAGE TYPE RECEIVED");
+                            }
+                        } // end else
+                    } // if available
+                } catch (IOException ioException) {
+
+                } catch (ClassNotFoundException e) {
+                    //e.printStackTrace();
+                }
+                catch(Exception e){
+
                 }
 
-                //System.out.println(currentThread().getName() + " Inside whiile =  " + amIInitiator);
-
-
-                if( true) {
-
-                    System.out.println(" Inside available =  " + currentThread().getName());
-
-
-                    byte[] messageInBytes = (byte[]) in.readObject();
-                    //show the message to the user
-                    System.out.println(currentThread().getName() + " :Receive message: " + messageInBytes + " from client ");
-
-                    if (!HSEstablished) {
-                        boolean isValid = receiveHandshakeMsg(messageInBytes);
-                        if (isValid) {
-                            if (!amIInitiator) {
-                                sendHandshakeMsg(parent.selfPeer.getPeerId());
-                            }else{
-                                sendBitfieldMsg();
-                            }
-                            HSEstablished = true;
-                            // TODO log connection established here
-                        }
-                    } else {
-                        Message message = new Message(messageInBytes);
-                        switch (message.getMessageType()) {
-                            case Constants.CHOKE:
-                                receiveChokeMsg();
-                                break;
-                            case Constants.UNCHOKE:
-                                receiveUnchokeMsg();
-                                break;
-                            case Constants.INTERESTED:
-                                receivedInterestedMsg();
-                                break;
-                            case Constants.NOT_INTERESTED:
-                                receivedNotInterested();
-                                break;
-                            case Constants.HAVE:
-                                receivedHaveMsg(messageInBytes);
-                                break;
-                            case Constants.BITFIELD:
-                                receiveBitfield(messageInBytes);
-                                break;
-                            case Constants.REQUEST:
-                                receiveRequestMsg(messageInBytes);
-                                break;
-                            case Constants.PIECE:
-                                receivePieceMsg(messageInBytes);
-                                break;
-                            default:
-                                System.out.println("\n INVALID MESSAGE TYPE RECEIVED");
-                        }
-                    } // end else
-                } // if available
             } // end while
         }
         catch (ConnectException e) {
             System.err.println("Connection refused. You need to initiate a server first.");
         }
-        catch ( ClassNotFoundException e ) {
-            System.err.println("Class not found");
-        }
+
         catch(UnknownHostException unknownHost){
             System.err.println("You are trying to connect to an unknown host!");
         }
         catch(IOException ioException){
                 ioException.printStackTrace();
         }
+
     }// receiveUnchokeMsg
 
     public void sendMessage(byte[] msg)
@@ -189,7 +201,9 @@ public class PeerHandler extends Thread {
             // This is the peer connected to via this handler.
             parent.updatePeerMap(peerIdReceived, this);
             this.peerConnected = parent.peerInfoHandler.getPeerHashMap().get(peerIdReceived);
-            logger.writelog(2,peerConnected.getPeerId(),parent.selfId,0,0);
+            if(amIInitiator){
+                logger.writelog(1,peerConnected.getPeerId(),parent.selfId,0,0);
+            }
             return true;
         }
         else
@@ -204,6 +218,10 @@ public class PeerHandler extends Thread {
         HandshakeMessage handshakeMessage = new HandshakeMessage(peerId); // hardcoded peer ID
         byte[] handshakeMessageInBytes = handshakeMessage.getMessage();
         sendMessage(handshakeMessageInBytes);
+        if (!amIInitiator){
+            logger.writelog(2,peerConnected.getPeerId(),parent.selfId,0,0);
+
+        }
     }
 
     /* Sends the nodes bitfield to peer at time of handshake */
@@ -272,7 +290,7 @@ public class PeerHandler extends Thread {
         HaveMessage haveMessage = new HaveMessage(msg);
         //
         int havePieceId = haveMessage.getPieceIndex();
-        logger.writelog(5,peerConnected.getPeerId(),parent.selfId,havePieceId,0);
+        logger.writelog(5, peerConnected.getPeerId(), parent.selfId, havePieceId,0);
         Util.updateBitFieldWithPiece(peerConnected.getBitfield(), havePieceId);
         if(!checkIfHave(havePieceId)) {
             sendInterestedMsg();
@@ -282,6 +300,7 @@ public class PeerHandler extends Thread {
     public void receiveBitfield(byte[]msg){
         BitfieldMessage bitfieldMessage = new BitfieldMessage(msg);
         // Set connected peer's bit field for the first time
+        System.out.println(currentThread().getName() + " : got bitfield as " + bitfieldMessage.getBitfield());
         this.peerConnected.setBitfield(bitfieldMessage.getBitfield());
         // send hosts bitfield back
         if(!amIInitiator){
@@ -299,14 +318,17 @@ public class PeerHandler extends Thread {
 
     public void receivedInterestedMsg(){
         // update interested peer set of parent node here
-        logger.writelog(6,peerConnected.getPeerId(),parent.selfId,0,0);
+        logger.writelog(6, peerConnected.getPeerId(), parent.selfId,0,0);
         parent.addtointerestedPeerList(peerConnected.getPeerId());
     }
 
     public void receivedNotInterested(){
         // if this peer was previously in interested set, remove it
-        logger.writelog(7,peerConnected.getPeerId(),parent.selfId,0,0);
+        logger.writelog(7, peerConnected.getPeerId(), parent.selfId,0,0);
         parent.removefrominterestedPeerList(peerConnected.getPeerId());
+        if(parent.myFileHandler.checkIfFinish()){
+            parent.updateDoneSet(peerConnected.getPeerId());
+        }
     }
 
     public void receiveChokeMsg(){
@@ -314,15 +336,14 @@ public class PeerHandler extends Thread {
         byte[] rcvChokeMsg = new byte[10];
         ChokeMessage chokeMessage = new ChokeMessage(rcvChokeMsg);
         gotChoked = true;
-        logger.writelog(4,peerConnected.getPeerId(),parent.selfId,0,0);
+        logger.writelog(4, peerConnected.getPeerId(), parent.selfId,0,0);
     }
 
     public void receiveUnchokeMsg(){
         // find out required piece and begin transmitting.
         // send 'request' msg here
         gotChoked = false;
-        logger.writelog(3,peerConnected.getPeerId(),parent.selfId,0,0);
-        // TODO select one pice from interesting pieces and start requesting till unchoke is received
+        logger.writelog(3, peerConnected.getPeerId(), parent.selfId,0,0);
         List<Integer> interestingPieces = parent.myFileHandler.chunksIAmInterestedInFromPeer(peerConnected.getBitfield());
         if(interestingPieces.isEmpty()) {
             // that peer unchoked me but I am no longer interested in any of it's pieces
@@ -357,11 +378,10 @@ public class PeerHandler extends Thread {
         PieceMessage pieceMessage = new PieceMessage(msg);
         int pieceIndex = pieceMessage.getPieceIndex();
         byte[] chunk = pieceMessage.getPieceContent();
-
-        logger.writelog(8,peerConnected.getPeerId(),parent.selfId,pieceIndex,peerConnected.myFileHandler.numOfChunksIHave());
-
         parent.myFileHandler.putChunk(pieceIndex, chunk);
         parent.myFileHandler.updateMyBitfiled(pieceIndex);
+        logger.writelog(8, peerConnected.getPeerId(), parent.selfId, pieceIndex, parent.myFileHandler.numOfChunksIHave());
+
         parent.sendHavePieceUpdateToAll(pieceIndex);
         if(!gotChoked) {
             List<Integer> interestedPieceList = parent.myFileHandler.chunksIAmInterestedInFromPeer(peerConnected.getBitfield());

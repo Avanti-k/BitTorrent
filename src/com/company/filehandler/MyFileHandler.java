@@ -1,5 +1,6 @@
 package com.company.filehandler;
 
+import com.company.Util;
 import com.company.pojo.ProjectConfiguration;
 
 import java.awt.*;
@@ -17,8 +18,11 @@ public class MyFileHandler {
 
     byte[] bitField;
     boolean iHaveFile;
-    public MyFileHandler(Boolean iHaveFile){
+    int selfId;
+    public MyFileHandler(Boolean iHaveFile, int selfId){
         this.iHaveFile = iHaveFile;
+        this.selfId = selfId;
+
 
         bitFieldSetUp();
         if(iHaveFile){
@@ -28,12 +32,19 @@ public class MyFileHandler {
                 e.printStackTrace();
             }
         }
+      //  setDirectory();
+    }
+
+    private void setDirectory() {
+        String path = "peer_"+selfId;
+        File file = new File(path);
+        file.mkdir();
     }
 
 
     private void bitFieldSetUp() {
         ProjectConfiguration projectConfiguration = CommonConfigHandler.getInstance().getProjectConfiguration();
-        bitField = new byte[projectConfiguration.getNumChunks()];
+        bitField = new byte[Util.convertNumBitsToNumBytes(projectConfiguration.getNumChunks())];
         try {
             if(iHaveFile){
                 BitSet set = BitSet.valueOf(bitField);
@@ -94,7 +105,7 @@ public class MyFileHandler {
 
 
     public  void splitFile(String fName) throws IOException {
-        File f = new File(fName);
+        File f = new File(selfId +"/"+fName);
         int partCounter = 0;//I like to name parts from 001, 002, 003, ...
         //you can change it to 0 if you want 000, 001, ...
 
@@ -171,9 +182,10 @@ public class MyFileHandler {
         }
     }
 
-    public void putChunk(int pieceIndex, byte[] fileData){
+    synchronized public void putChunk(int pieceIndex, byte[] fileData){
         try {
-            String path = CommonConfigHandler.getInstance().getProjectConfiguration().getFileName() + "." + pieceIndex;
+
+            String path = selfId +"/"+ CommonConfigHandler.getInstance().getProjectConfiguration().getFileName() + "." + pieceIndex;
             File file = new File(path);
             OutputStream
                     os
@@ -187,6 +199,9 @@ public class MyFileHandler {
             // Close the file
             os.close();
             updateMyBitfiled(pieceIndex);
+            if(checkIfFinish()){
+                mergeFiles(path, selfId +"/" + CommonConfigHandler.getInstance().getProjectConfiguration().getFileName());
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -197,7 +212,7 @@ public class MyFileHandler {
         byte[] data = null;
 
         try {
-            String fPath = CommonConfigHandler.getInstance().getProjectConfiguration().getFileName() + "." + pieceIndex;
+            String fPath = selfId+"/"+CommonConfigHandler.getInstance().getProjectConfiguration().getFileName() + "." + pieceIndex;
             Path path = Paths.get(fPath);
             data = Files.readAllBytes(path);
         } catch (IOException e) {
