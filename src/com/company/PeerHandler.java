@@ -61,6 +61,9 @@ public class PeerHandler extends Thread {
                         {
                             sendUnchokedMsg();
                         }
+                        else if(command.getType() == Constants.DONE){
+                            sendDoneMsg();
+                        }
                         else if (command.getType() == Constants.HAVE){
                             int pieceId = command.getValue();
                             sendHaveMsg(pieceId);
@@ -118,6 +121,10 @@ public class PeerHandler extends Thread {
                                 case Constants.PIECE:
                                     receivePieceMsg(messageInBytes);
                                     break;
+                                case Constants.DONE:
+                                    receivedDoneMsg(messageInBytes);
+                                    break;
+
                                 default:
                                     System.out.println("\n INVALID MESSAGE TYPE RECEIVED");
                             }
@@ -232,6 +239,15 @@ public class PeerHandler extends Thread {
         sendMessage(bitfieldMessageInBytes);
     }
 
+    /* Sends the nodes bitfield to peer at time of handshake */
+    public void sendDoneMsg(){
+        // Send parents bitfield to connected peer
+        DoneMessage doneMessage = new DoneMessage();
+        byte[] doneMsgInBytes = doneMessage.getMessage();
+        // send over TCP
+        sendMessage(doneMsgInBytes);
+    }
+
     public void sendInterestedMsg(){
         InterestedMessage interestedMessage = new InterestedMessage();
         byte[] interestedMessageInBytes = interestedMessage.getMessage();
@@ -328,10 +344,19 @@ public class PeerHandler extends Thread {
         parent.removefrominterestedPeerList(peerConnected.getPeerId());
         if(parent.myFileHandler.checkIfFinish()){
             System.out.println("\n ****  Parent " + parent.selfPeer.getPeerId() + "is finised\n");
-            parent.updateDoneSet(peerConnected.getPeerId());
+            //parent.updateDoneSet(peerConnected.getPeerId());
         }
     }
 
+    public void receivedDoneMsg(byte[] message){
+        // if this peer was previously in interested set, remove it
+       // parent.logger.writelog(7, peerConnected.getPeerId(), parent.selfId,0,0);
+        //parent.removefrominterestedPeerList(peerConnected.getPeerId());
+        System.out.println("\n ****  Parent " + parent.selfPeer.getPeerId() + "got that peerConnectd is done : " +
+                peerConnected.getPeerId());
+        parent.updateDoneSet(peerConnected.getPeerId());
+
+    }
     public void receiveChokeMsg(){
         // dont transmit
         byte[] rcvChokeMsg = new byte[10];
@@ -387,6 +412,7 @@ public class PeerHandler extends Thread {
         if(parent.myFileHandler.checkIfFinish()){
             // write finish log
             System.out.println(" Node " + parent.selfPeer.getPeerId() + " has complete file now");
+            parent.sendDoneUpdateToAll();
             parent.logger.writelog(9, peerConnected.getPeerId(), parent.selfId,0,0);
 
         }

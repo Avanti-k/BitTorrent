@@ -9,4 +9,5 @@ public class Constants {
     public static final byte BITFIELD = 5;
     public static final byte REQUEST = 6;
     public static final byte PIECE = 7;
+    public static final byte DONE = 9;
 }
