@@ -223,14 +223,16 @@ public class MyFileHandler {
 
     public boolean checkIfFinish(){
         BitSet set = BitSet.valueOf(bitField);
-        boolean flag = true;
-
+        if(set.length() == 0){
+            return false;
+        }
         for(int i = 0; i < set.length(); i++){
             if(!set.get(i)){
-                flag = false;
+                return false;
             }
         }
-        return flag;
+        return true;
+
     }
 
 

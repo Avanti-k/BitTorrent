@@ -327,6 +327,7 @@ public class PeerHandler extends Thread {
         logger.writelog(7, peerConnected.getPeerId(), parent.selfId,0,0);
         parent.removefrominterestedPeerList(peerConnected.getPeerId());
         if(parent.myFileHandler.checkIfFinish()){
+            System.out.println("\n ****  Parent " + parent.selfPeer.getPeerId() + "is finised\n");
             parent.updateDoneSet(peerConnected.getPeerId());
         }
     }

@@ -52,7 +52,7 @@ public class Node extends Thread{
     MyFileHandler myFileHandler;
     int selfId;
     LoggerModule logger = new LoggerModule();
-
+    Lock donePeerLock;
     public Node(int selfId)
     {
         this.selfId = selfId;
@@ -72,6 +72,7 @@ public class Node extends Thread{
         sPort = peerInfoHandler.getPeerHashMap().get(selfId).getPortNo();
         selfPeer = peerInfoHandler.getPeerHashMap().get(selfId);
         donePeers = new HashSet<>();
+        donePeerLock = new ReentrantLock();
 
     }
 
@@ -201,12 +202,18 @@ public class Node extends Thread{
     }
 
     synchronized public void updateDoneSet( int peerId){
+        donePeerLock.lock();
         donePeers.add(peerId);
-        if(donePeers.size() == peerInfoHandler.getPeerHashMap().size()){
+        System.out.println(selfId + " : got updateDoneSet size =  " + donePeers.size());
+        if(donePeers.size() == peerInfoHandler.getPeerHashMap().size() - 1){
             // TODO terminate program here
             System.out.println("\n ******** " + currentThread().getName() + " :  ********** All peers completed ********* \n");
-          //  System.exit(0);
+            donePeerLock.unlock();
+            System.exit(0);
+
         }
+        donePeerLock.unlock();
+
     }
     public void sendHavePieceUpdateToAll(int pieceIndex){
         PeerHandler[] handlersSet = PeerMap.values().toArray(new PeerHandler[0]);
