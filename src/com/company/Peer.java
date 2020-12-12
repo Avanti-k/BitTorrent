@@ -1,5 +1,7 @@
 package com.company;
 
+import com.company.filehandler.MyFileHandler;
+
 import java.net.Socket;
 import java.util.*;
 
@@ -11,8 +13,8 @@ public class Peer {
     private int peerId;
     private Socket connection;
     private byte[] bitfield;
-    Map<Integer, Integer> PeerIDtoDownloadRate;  //initialize this somewhere
-
+    private boolean haveFileInitially;
+    MyFileHandler myFileHandler;
     Boolean unchoked = false; // maintain current status of that Neighbour
     // getters
     public int getPortNo(){
@@ -35,12 +37,15 @@ public class Peer {
         return this.bitfield;
     }
 
-    public Map<Integer, Integer> getPeerIDtoDownloadRate(){
-        return this.PeerIDtoDownloadRate;
+    public boolean gethaveFileInitially(){
+        return haveFileInitially;
     }
-
     // setters
 
+
+    public void setHaveFileInitially(boolean haveFileInitially) {
+        this.haveFileInitially = haveFileInitially;
+    }
 
     public void setBitfield(byte[] bitfield) {
         this.bitfield = bitfield;
@@ -57,6 +62,7 @@ public class Peer {
     public void setPeerId(int peerId) {
         this.peerId = peerId;
     }
+
 
     public void setPortNo(int portNo) {
         this.portNo = portNo;

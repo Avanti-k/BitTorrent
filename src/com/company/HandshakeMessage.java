@@ -8,7 +8,7 @@ public class HandshakeMessage {
     private byte[] zeroBits; // 10 bytes
     private int peerId; // 4 bytes
     public String header;
-    private byte[] message;
+    private byte[] message; // byte array of entire object
     public HandshakeMessage(byte[] input){
 
         byte[] peerByte = new byte[4];
@@ -23,12 +23,12 @@ public class HandshakeMessage {
         index = 0;
         // BUG:  should be length + i;
         /// index increment
-        for(; i < zeroes.length; i++){
+        for(; i < headerByte.length + zeroes.length; i++){
             zeroes[index] = input[i];
         }
         index = 0;
         //BUG : Should be length + i
-        for(; i < peerByte.length; i++){
+        for(; i < headerByte.length + zeroes.length+ peerByte.length; i++){
             peerByte[index] = input[i];
             index++;
         }
