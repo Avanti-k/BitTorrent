@@ -61,7 +61,7 @@ public class Node extends Thread{
         bitfieldLock = new ReentrantLock();
         isRequestedLock = new ReentrantLock();
         peerInfoHandler = new PeerInfoHandler(selfId);
-        myFileHandler = new MyFileHandler(peerInfoHandler.getPeerHashMap().get(selfId).gethaveFileInitially());
+        myFileHandler = new MyFileHandler(peerInfoHandler.getPeerHashMap().get(selfId).gethaveFileInitially(), selfId);
         peerMapLock = new ReentrantLock();
         sPort = peerInfoHandler.getPeerHashMap().get(selfId).getPortNo();
         selfPeer = peerInfoHandler.getPeerHashMap().get(selfId);
