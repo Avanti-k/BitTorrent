@@ -11,6 +11,7 @@ import java.io.*;
 import java.util.*;
 import java.lang.*;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import com.company.pojo.ProjectConfiguration;
@@ -34,8 +35,8 @@ public class Node extends Thread{
     // TODO add timers Peerlist update and random optimistic peer update
     // private byte[] myBitfield;
 
-    private HashSet<Integer> unchokedPeers;      // contains index of currently unchoked peers
-    private HashSet<Integer> ChokedPeers;           // indices of choked peers
+    private Set<Integer> unchokedPeers;      // contains index of currently unchoked peers
+    private Set<Integer> ChokedPeers;           // indices of choked peers
     private HashSet<Integer> donePeers;
     private int OptimisticallySelectedPeer;
     private Boolean HasCompleteFile = false; //set in the beginning based on the PeerInfo file
@@ -54,9 +55,13 @@ public class Node extends Thread{
 
     public Node(int selfId)
     {
-        unchokedPeers = new HashSet<>();
         this.selfId = selfId;
-        ChokedPeers = new HashSet<>();
+
+        ConcurrentHashMap<Integer, Integer> unChokeMap = new ConcurrentHashMap<Integer, Integer>();
+        ConcurrentHashMap<Integer, Integer> chokeMap = new ConcurrentHashMap<Integer, Integer>();
+
+        unchokedPeers = unChokeMap.newKeySet();
+        ChokedPeers = chokeMap.newKeySet();
         preferredPeers = new HashSet<>();
         interestedPeers = new HashSet<>();
         bitfieldLock = new ReentrantLock();
@@ -166,10 +171,10 @@ public class Node extends Thread{
     public int getOptimisticallySelectedPeer(){
         return this.OptimisticallySelectedPeer;
     }
-    public HashSet<Integer> getunchokedPeers(){
+    public Set<Integer> getunchokedPeers(){
         return this.unchokedPeers;
     }
-    public HashSet<Integer> getChokedPeers(){
+    public Set<Integer> getChokedPeers(){
         return this.ChokedPeers;
     }
     public int getexpectedpeerID() {
@@ -200,7 +205,7 @@ public class Node extends Thread{
         if(donePeers.size() == peerInfoHandler.getPeerHashMap().size()){
             // TODO terminate program here
             System.out.println("\n ******** " + currentThread().getName() + " :  ********** All peers completed ********* \n");
-            System.exit(0);
+          //  System.exit(0);
         }
     }
     public void sendHavePieceUpdateToAll(int pieceIndex){
@@ -381,7 +386,7 @@ public class Node extends Thread{
                     System.out.println("Thread for selecting optimistic unchoked peer Running");
                     //select opt unchoked neighbor
                     if (!getChokedPeers().isEmpty()) {
-                        HashSet<Integer> temp = getChokedPeers();
+                        Set<Integer> temp = getChokedPeers();
                         temp.retainAll(getinterestedPeerList());
                         List<Integer> tempList = new ArrayList<Integer>(temp);
                         Random rand = new Random();
