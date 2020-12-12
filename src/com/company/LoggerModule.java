@@ -84,7 +84,7 @@ public class LoggerModule {
                 break;
             case 8:     //downloading a piece
                 //System.out.println("[" + getcurrtime() + "]: Peer [" + peerHost + "] has downloaded the piece [" + pieceindex + "] from [" + peerConnected +"]. Now the number of pieces it has is [" + numpieces + "].");
-                this.logger.info("Peer [" + peerHost + "] has downloaded the piece [" + pieceindex + " from [" + peerConnected +"]. Now the number of pieces it has is [" + numpieces + "].");
+                this.logger.info("Peer [" + peerHost + "] has downloaded the piece [" + pieceindex + "] from [" + peerConnected +"]. Now the number of pieces it has is [" + numpieces + "].");
                 break;
             case 9:     //completion of download
                 //System.out.println("[" + getcurrtime() + "]: Peer [" + peerHost + "] has downloaded the complete file.");

@@ -72,7 +72,7 @@ public class PeerHandler extends Thread {
 
                     if(true) {
 
-                        System.out.println(" Inside available =  " + currentThread().getName());
+                        //System.out.println(" Inside available =  " + currentThread().getName());
                         connection.setSoTimeout(1000);
 
 
@@ -385,6 +385,7 @@ public class PeerHandler extends Thread {
         parent.sendHavePieceUpdateToAll(pieceIndex);
         if(parent.myFileHandler.checkIfFinish()){
             // write finish log
+            System.out.println(" Node " + parent.selfPeer.getPeerId() + " has complete file now");
             parent.logger.writelog(9, peerConnected.getPeerId(), parent.selfId,0,0);
 
         }

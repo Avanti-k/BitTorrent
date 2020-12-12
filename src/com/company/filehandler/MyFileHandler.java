@@ -222,8 +222,13 @@ public class MyFileHandler {
     }
 
     public boolean checkIfFinish(){
+        ProjectConfiguration projectConfiguration = CommonConfigHandler.getInstance().getProjectConfiguration();
+        int totalChunks = projectConfiguration.getNumChunks();
         BitSet set = BitSet.valueOf(bitField);
         if(set.length() == 0){
+            return false;
+        }
+        if(set.length() != totalChunks){
             return false;
         }
         for(int i = 0; i < set.length(); i++){
@@ -231,6 +236,7 @@ public class MyFileHandler {
                 return false;
             }
         }
+
         return true;
 
     }
