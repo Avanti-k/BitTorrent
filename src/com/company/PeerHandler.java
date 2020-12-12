@@ -24,6 +24,7 @@ public class PeerHandler extends Thread {
     PeerHandler(Socket clientSocket, Node parent, boolean amIInitiator){
         this.parent = parent;
         this.connection = clientSocket;
+        int someTimeout = 1000;
         this.amIInitiator = amIInitiator;
         commandQueue = new LinkedList<>();
     }
@@ -44,97 +45,104 @@ public class PeerHandler extends Thread {
             System.out.println(currentThread().getName() + " Before whiile =  " + amIInitiator);
 
             while (true) {
-                //receive the message sent from the client
-                // check in command queue if any command from node is received
+                try {
+                    //receive the message sent from the client
+                    // check in command queue if any command from node is received
 
 
-                if(commandQueue.size() != 0)
-                {
-                    // Parent has sent choke/unchoke command
-                    Command command = commandQueue.remove();
-                    if (command.getType() == Constants.CHOKE)
+                    if(commandQueue.size() != 0)
                     {
-                        sendChokeMsg();
+                        // Parent has sent choke/unchoke command
+                        Command command = commandQueue.remove();
+                        if (command.getType() == Constants.CHOKE)
+                        {
+                            sendChokeMsg();
+                        }
+                        else if (command.getType() == Constants.UNCHOKE)
+                        {
+                            sendUnchokedMsg();
+                        }
+                        else if (command.getType() == Constants.HAVE){
+                            int pieceId = command.getValue();
+                            sendHaveMsg(pieceId);
+                        }
                     }
-                    else if (command.getType() == Constants.UNCHOKE)
-                    {
-                        sendUnchokedMsg();
-                    }
-                    else if (command.getType() == Constants.HAVE){
-                        int pieceId = command.getValue();
-                        sendHaveMsg(pieceId);
-                    }
+
+                    //System.out.println(currentThread().getName() + " Inside whiile =  " + amIInitiator);
+
+
+                    if(true) {
+
+                        System.out.println(" Inside available =  " + currentThread().getName());
+                        connection.setSoTimeout(1000);
+
+
+                        byte[] messageInBytes = (byte[]) in.readObject();
+                        //show the message to the user
+                        System.out.println(currentThread().getName() + " :Receive message: " + messageInBytes + " from client ");
+
+                        if (!HSEstablished) {
+                            boolean isValid = receiveHandshakeMsg(messageInBytes);
+                            if (isValid) {
+                                if (!amIInitiator) {
+                                    sendHandshakeMsg(parent.selfPeer.getPeerId());
+                                }else{
+                                    sendBitfieldMsg();
+                                }
+                                HSEstablished = true;
+                                // TODO log connection established here
+                            }
+                        } else {
+                            Message message = new Message(messageInBytes);
+                            switch (message.getMessageType()) {
+                                case Constants.CHOKE:
+                                    receiveChokeMsg();
+                                    break;
+                                case Constants.UNCHOKE:
+                                    receiveUnchokeMsg();
+                                    break;
+                                case Constants.INTERESTED:
+                                    receivedInterestedMsg();
+                                    break;
+                                case Constants.NOT_INTERESTED:
+                                    receivedNotInterested();
+                                    break;
+                                case Constants.HAVE:
+                                    receivedHaveMsg(messageInBytes);
+                                    break;
+                                case Constants.BITFIELD:
+                                    receiveBitfield(messageInBytes);
+                                    break;
+                                case Constants.REQUEST:
+                                    receiveRequestMsg(messageInBytes);
+                                    break;
+                                case Constants.PIECE:
+                                    receivePieceMsg(messageInBytes);
+                                    break;
+                                default:
+                                    System.out.println("\n INVALID MESSAGE TYPE RECEIVED");
+                            }
+                        } // end else
+                    } // if available
+                } catch (IOException ioException) {
+
+                } catch (ClassNotFoundException e) {
+                    //e.printStackTrace();
                 }
 
-                //System.out.println(currentThread().getName() + " Inside whiile =  " + amIInitiator);
-
-
-                if( true) {
-
-                    System.out.println(" Inside available =  " + currentThread().getName());
-
-
-                    byte[] messageInBytes = (byte[]) in.readObject();
-                    //show the message to the user
-                    System.out.println(currentThread().getName() + " :Receive message: " + messageInBytes + " from client ");
-
-                    if (!HSEstablished) {
-                        boolean isValid = receiveHandshakeMsg(messageInBytes);
-                        if (isValid) {
-                            if (!amIInitiator) {
-                                sendHandshakeMsg(parent.selfPeer.getPeerId());
-                            }else{
-                                sendBitfieldMsg();
-                            }
-                            HSEstablished = true;
-                            // TODO log connection established here
-                        }
-                    } else {
-                        Message message = new Message(messageInBytes);
-                        switch (message.getMessageType()) {
-                            case Constants.CHOKE:
-                                receiveChokeMsg();
-                                break;
-                            case Constants.UNCHOKE:
-                                receiveUnchokeMsg();
-                                break;
-                            case Constants.INTERESTED:
-                                receivedInterestedMsg();
-                                break;
-                            case Constants.NOT_INTERESTED:
-                                receivedNotInterested();
-                                break;
-                            case Constants.HAVE:
-                                receivedHaveMsg(messageInBytes);
-                                break;
-                            case Constants.BITFIELD:
-                                receiveBitfield(messageInBytes);
-                                break;
-                            case Constants.REQUEST:
-                                receiveRequestMsg(messageInBytes);
-                                break;
-                            case Constants.PIECE:
-                                receivePieceMsg(messageInBytes);
-                                break;
-                            default:
-                                System.out.println("\n INVALID MESSAGE TYPE RECEIVED");
-                        }
-                    } // end else
-                } // if available
             } // end while
         }
         catch (ConnectException e) {
             System.err.println("Connection refused. You need to initiate a server first.");
         }
-        catch ( ClassNotFoundException e ) {
-            System.err.println("Class not found");
-        }
+
         catch(UnknownHostException unknownHost){
             System.err.println("You are trying to connect to an unknown host!");
         }
         catch(IOException ioException){
                 ioException.printStackTrace();
         }
+
     }// receiveUnchokeMsg
 
     public void sendMessage(byte[] msg)

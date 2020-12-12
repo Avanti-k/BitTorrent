@@ -36,8 +36,8 @@ public class Message {
 
     /* Needed for Piece Message where payload is pieceID and content
      */
-    public Message(int pieceID, byte[] messagePayload, byte type){
-        byte[] combinedPayload = combineAndFormPayload(pieceID, messagePayload);
+    public Message(int pieceID, byte[] payload, byte type){
+        byte[] combinedPayload = combineAndFormPayload(pieceID, payload);
         this.messageType = type;
         this.messagePayload = combinedPayload;
         this.messageLength = 1 + messagePayload.length;
