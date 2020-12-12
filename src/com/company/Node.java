@@ -61,7 +61,7 @@ public class Node extends Thread{
         bitfieldLock = new ReentrantLock();
         isRequestedLock = new ReentrantLock();
         peerInfoHandler = new PeerInfoHandler(selfId);
-        myFileHandler = new MyFileHandler(peerInfoHandler.getPeerHashMap().get(selfId).gethaveFileInitially());
+        myFileHandler = new MyFileHandler(peerInfoHandler.getPeerHashMap().get(selfId).gethaveFileInitially(), selfId);
         peerMapLock = new ReentrantLock();
         sPort = peerInfoHandler.getPeerHashMap().get(selfId).getPortNo();
         selfPeer = peerInfoHandler.getPeerHashMap().get(selfId);
@@ -108,8 +108,6 @@ public class Node extends Thread{
                     updateOptimisticallyUnchokedPeer();
                     diviFlag = false;
                 }
-
-
 
                 }
         } catch (IOException e) {
@@ -363,6 +361,8 @@ public class Node extends Thread{
                         Thread.sleep(getp() * 1000); // p = unchoking interval
 
                     } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (Exception e){
                         e.printStackTrace();
                     }
                 }

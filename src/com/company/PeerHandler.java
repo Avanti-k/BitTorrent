@@ -128,6 +128,9 @@ public class PeerHandler extends Thread {
                 } catch (ClassNotFoundException e) {
                     //e.printStackTrace();
                 }
+                catch(Exception e){
+
+                }
 
             } // end while
         }
