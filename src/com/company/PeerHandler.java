@@ -29,15 +29,18 @@ public class PeerHandler extends Thread {
     }
 
     public void run(){
-        System.out.println("One peer Handler thread started..");
+        System.out.println(currentThread().getName() + " : One peer Handler thread started.. Initiator =  " + amIInitiator);
         try {
             out = new ObjectOutputStream(connection.getOutputStream());
             out.flush();
             in = new ObjectInputStream(connection.getInputStream());
 
             if (amIInitiator) {
+                System.out.println(currentThread().getName() + " Sending HS =  " + amIInitiator);
+
                 sendHandshakeMsg(parent.selfPeer.getPeerId());
             }
+            System.out.println(currentThread().getName() + " Before whiile =  " + amIInitiator);
 
             while (true) {
                 //receive the message sent from the client
@@ -62,12 +65,17 @@ public class PeerHandler extends Thread {
                     }
                 }
 
+                //System.out.println(currentThread().getName() + " Inside whiile =  " + amIInitiator);
 
 
                 if( true) {
+
+                    System.out.println(" Inside available =  " + currentThread().getName());
+
+
                     byte[] messageInBytes = (byte[]) in.readObject();
                     //show the message to the user
-             //       System.out.println("Receive message: " + message + " from client " + peerConnected.getPeerId());
+                    System.out.println(currentThread().getName() + " :Receive message: " + messageInBytes + " from client ");
 
                     if (!HSEstablished) {
                         boolean isValid = receiveHandshakeMsg(messageInBytes);
@@ -191,6 +199,8 @@ public class PeerHandler extends Thread {
         }
     }
     public void sendHandshakeMsg(int peerId){
+        System.out.println(currentThread().getName() + " Sending HS =  " + amIInitiator + " to peerID = " + peerId);
+
         HandshakeMessage handshakeMessage = new HandshakeMessage(peerId); // hardcoded peer ID
         byte[] handshakeMessageInBytes = handshakeMessage.getMessage();
         sendMessage(handshakeMessageInBytes);

@@ -71,8 +71,11 @@ public class Node extends Thread{
 
 
     public void run(){
-        System.out.println("The server is running....");
-        int numPieces = projectConfiguration.getNumChunks(); // TODO user myFilehandler dummy
+        int numPieces = projectConfiguration.getNumChunks();
+        System.out.println(currentThread().getName() + " : The server is running.... on port = " + sPort +
+                " numChunks = " + numPieces + " haveFile = " + peerInfoHandler.getPeerHashMap().get(selfId).gethaveFileInitially());
+
+
         isRequested = new boolean[numPieces];
         boolean toConnectPrevious = true;
 
