@@ -1,0 +1,60 @@
+Dec 12, 2020 1:48:54 PM com.company.LoggerModule writelog
+INFO: [2020-12-12 13:48:54] [INFO   ] Peer [1009] is connected from Peer [1002]. 
+
+Dec 12, 2020 1:48:54 PM com.company.LoggerModule writelog
+INFO: [2020-12-12 13:48:54] [INFO   ] Peer [1005] is connected from Peer [1002]. 
+
+Dec 12, 2020 1:48:54 PM com.company.LoggerModule writelog
+INFO: [2020-12-12 13:48:54] [INFO   ] Peer [1008] is connected from Peer [1002]. 
+
+Dec 12, 2020 1:48:54 PM com.company.LoggerModule writelog
+INFO: [2020-12-12 13:48:54] [INFO   ] Peer [1007] is connected from Peer [1002]. 
+
+Dec 12, 2020 1:48:54 PM com.company.LoggerModule writelog
+INFO: [2020-12-12 13:48:54] [INFO   ] Peer [1006] is connected from Peer [1002]. 
+
+Dec 12, 2020 1:48:54 PM com.company.LoggerModule writelog
+INFO: [2020-12-12 13:48:54] [INFO   ] Peer [1004] is connected from Peer [1002]. 
+
+Dec 12, 2020 1:48:54 PM com.company.LoggerModule writelog
+INFO: [2020-12-12 13:48:54] [INFO   ] Peer [1003] is connected from Peer [1002]. 
+
+Dec 12, 2020 1:48:54 PM com.company.LoggerModule writelog
+INFO: [2020-12-12 13:48:54] [INFO   ] Peer [1004] received the ‘not interested’ message from [1002]. 
+
+Dec 12, 2020 1:48:54 PM com.company.LoggerModule writelog
+INFO: [2020-12-12 13:48:54] [INFO   ] Peer [1006] received the ‘not interested’ message from [1002]. 
+
+Dec 12, 2020 1:48:54 PM com.company.LoggerModule writelog
+INFO: [2020-12-12 13:48:54] [INFO   ] Peer [1005] received the ‘not interested’ message from [1002]. 
+
+Dec 12, 2020 1:48:54 PM com.company.LoggerModule writelog
+INFO: [2020-12-12 13:48:54] [INFO   ] Peer [1003] received the ‘not interested’ message from [1002]. 
+
+Dec 12, 2020 1:48:54 PM com.company.LoggerModule writelog
+INFO: [2020-12-12 13:48:54] [INFO   ] Peer [1007] received the ‘not interested’ message from [1002]. 
+
+Dec 12, 2020 1:48:54 PM com.company.LoggerModule writelog
+INFO: [2020-12-12 13:48:54] [INFO   ] Peer [1009] received the ‘not interested’ message from [1002]. 
+
+Dec 12, 2020 1:48:54 PM com.company.LoggerModule writelog
+INFO: [2020-12-12 13:48:54] [INFO   ] Peer [1008] received the ‘not interested’ message from [1002]. 
+
+Dec 12, 2020 1:48:59 PM com.company.LoggerModule writelog
+INFO: [2020-12-12 13:48:59] [INFO   ] Peer [1006] is unchoked by [1002]. 
+
+Dec 12, 2020 1:49:04 PM com.company.LoggerModule writelog
+INFO: [2020-12-12 13:49:04] [INFO   ] Peer [1006] is choked by [1002]. 
+
+Dec 12, 2020 1:49:09 PM com.company.LoggerModule writelog
+INFO: [2020-12-12 13:49:09] [INFO   ] Peer [1006] is unchoked by [1002]. 
+
+Dec 12, 2020 1:49:14 PM com.company.LoggerModule writelog
+INFO: [2020-12-12 13:49:14] [INFO   ] Peer [1006] is choked by [1002]. 
+
+Dec 12, 2020 1:49:24 PM com.company.LoggerModule writelog
+INFO: [2020-12-12 13:49:24] [INFO   ] Peer [1006] is unchoked by [1002]. 
+
+Dec 12, 2020 1:49:29 PM com.company.LoggerModule writelog
+INFO: [2020-12-12 13:49:29] [INFO   ] Peer [1006] is unchoked by [1002]. 
+

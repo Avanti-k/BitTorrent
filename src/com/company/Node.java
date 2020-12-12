@@ -51,8 +51,9 @@ public class Node extends Thread{
     Lock isRequestedLock;
     MyFileHandler myFileHandler;
     int selfId;
-    LoggerModule logger = new LoggerModule();
     Lock donePeerLock;
+    LoggerModule logger;
+
     public Node(int selfId)
     {
         this.selfId = selfId;
@@ -73,6 +74,7 @@ public class Node extends Thread{
         selfPeer = peerInfoHandler.getPeerHashMap().get(selfId);
         donePeers = new HashSet<>();
         donePeerLock = new ReentrantLock();
+        logger = new LoggerModule(selfId);
 
     }
 
@@ -344,7 +346,7 @@ public class Node extends Thread{
                             setpreferredPeers(tSet1);
                         }
                         //choke or unchoke them (only k) based on their current state
-                        logger.writeLogForPreferedNeighbors(node.selfPeer.getPeerId(), node.getpreferredPeers());
+                        node.logger.writeLogForPreferedNeighbors(node.selfPeer.getPeerId(), node.getpreferredPeers());
                         //unchoking selected ones
                         for (int PreferredPeer : node.preferredPeers) {
                             if (!getunchokedPeers().contains(PreferredPeer)) //if previously not choked //opt selected peer selected and choked separately
@@ -400,7 +402,7 @@ public class Node extends Thread{
                         int randomElement = tempList.get(rand.nextInt(tempList.size()));
                         setOptimisticallySelectedPeer(randomElement);
                         node.PeerMap.get(randomElement).commandQueue.add(new Command(Constants.UNCHOKE, -1));
-                        logger.writeLogForOptNeighbor(node.selfPeer.getPeerId(), randomElement);
+                        node.logger.writeLogForOptNeighbor(node.selfPeer.getPeerId(), randomElement);
                     }
                     try {
                         Thread.sleep(getm() * 1000); // m = optimistic unchoking interval
