@@ -109,8 +109,6 @@ public class Node extends Thread{
                     diviFlag = false;
                 }
 
-
-
                 }
         } catch (IOException e) {
             try{
@@ -363,6 +361,8 @@ public class Node extends Thread{
                         Thread.sleep(getp() * 1000); // p = unchoking interval
 
                     } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (Exception e){
                         e.printStackTrace();
                     }
                 }

@@ -199,6 +199,9 @@ public class MyFileHandler {
             // Close the file
             os.close();
             updateMyBitfiled(pieceIndex);
+            if(checkIfFinish()){
+                mergeFiles(path, selfId +"/" + CommonConfigHandler.getInstance().getProjectConfiguration().getFileName());
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
