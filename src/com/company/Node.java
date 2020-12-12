@@ -362,6 +362,8 @@ public class Node extends Thread{
 
                     } catch (InterruptedException e) {
                         e.printStackTrace();
+                    } catch (Exception e){
+                        e.printStackTrace();
                     }
                 }
             }
