@@ -89,6 +89,7 @@ public class Node extends Thread{
         try {
             listeningSocket = new ServerSocket(sPort);
             int clientNum = 1;
+            boolean diviFlag = true;
             while(true) {
                 if(toConnectPrevious){
                     connectToMyPreviousPeers();
@@ -102,8 +103,11 @@ public class Node extends Thread{
                     //TODO
                     // add timers and then timout logic here
 
-                updatePreferedPeerList();
-                updateOptimisticallyUnchokedPeer();
+                if(diviFlag){
+                    updatePreferedPeerList();
+                    updateOptimisticallyUnchokedPeer();
+                    diviFlag = false;
+                }
 
 
 
