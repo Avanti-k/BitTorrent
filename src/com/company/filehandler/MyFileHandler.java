@@ -1,5 +1,6 @@
 package com.company.filehandler;
 
+import com.company.Util;
 import com.company.pojo.ProjectConfiguration;
 
 import java.awt.*;
@@ -33,7 +34,7 @@ public class MyFileHandler {
 
     private void bitFieldSetUp() {
         ProjectConfiguration projectConfiguration = CommonConfigHandler.getInstance().getProjectConfiguration();
-        bitField = new byte[projectConfiguration.getNumChunks()];
+        bitField = new byte[Util.convertNumBitsToNumBytes(projectConfiguration.getNumChunks())];
         try {
             if(iHaveFile){
                 BitSet set = BitSet.valueOf(bitField);

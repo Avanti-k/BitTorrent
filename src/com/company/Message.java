@@ -26,6 +26,7 @@ public class Message {
         messagePayload = new byte[input.length - (lenByte.length + 1)];
         for(; i < input.length; i++){
             messagePayload[index] = input[i];
+            index++;
         }
 
         messageLength = Util.convertBytetoInt(lenByte);
