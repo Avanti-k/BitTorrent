@@ -36,6 +36,7 @@ public class Node extends Thread{
 
     private HashSet<Integer> unchokedPeers;      // contains index of currently unchoked peers
     private HashSet<Integer> ChokedPeers;           // indices of choked peers
+    private HashSet<Integer> donePeers;
     private int OptimisticallySelectedPeer;
     private Boolean HasCompleteFile = false; //set in the beginning based on the PeerInfo file
     private int expectedpeerID;
@@ -65,16 +66,14 @@ public class Node extends Thread{
         peerMapLock = new ReentrantLock();
         sPort = peerInfoHandler.getPeerHashMap().get(selfId).getPortNo();
         selfPeer = peerInfoHandler.getPeerHashMap().get(selfId);
-
+        donePeers = new HashSet<>();
 
     }
-
 
     public void run(){
         int numPieces = projectConfiguration.getNumChunks();
         System.out.println(currentThread().getName() + " : The server is running.... on port = " + sPort +
                 " numChunks = " + numPieces + " haveFile = " + peerInfoHandler.getPeerHashMap().get(selfId).gethaveFileInitially());
-
 
         isRequested = new boolean[numPieces];
         boolean toConnectPrevious = true;
@@ -100,15 +99,11 @@ public class Node extends Thread{
                 clientNum++;
 
 
-                    //TODO
-                    // add timers and then timout logic here
-
                 if(diviFlag){
                     updatePreferedPeerList();
                     updateOptimisticallyUnchokedPeer();
                     diviFlag = false;
                 }
-
 
 
                 }
@@ -160,8 +155,6 @@ public class Node extends Thread{
 
     }
 
-
-
     //getters & setters can be added if needed later.
     //getters for used variables
     public HashSet<Integer> getinterestedPeerList(){
@@ -179,9 +172,6 @@ public class Node extends Thread{
     public HashSet<Integer> getChokedPeers(){
         return this.ChokedPeers;
     }
-//    public byte[] getMyBitfield() {
-//        return myBitfield;
-//    }
     public int getexpectedpeerID() {
         return expectedpeerID;
     }
@@ -205,6 +195,14 @@ public class Node extends Thread{
         peerMapLock.unlock();
     }
 
+    synchronized public void updateDoneSet( int peerId){
+        donePeers.add(peerId);
+        if(donePeers.size() == peerInfoHandler.getPeerHashMap().size()){
+            // TODO terminate program here
+            System.out.println("\n ******** " + currentThread().getName() + " :  ********** All peers completed ********* \n");
+            System.exit(0);
+        }
+    }
     public void sendHavePieceUpdateToAll(int pieceIndex){
         PeerHandler[] handlersSet = PeerMap.values().toArray(new PeerHandler[0]);
         Command command = new Command(Constants.HAVE, pieceIndex);

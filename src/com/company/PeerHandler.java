@@ -323,6 +323,9 @@ public class PeerHandler extends Thread {
         // if this peer was previously in interested set, remove it
         logger.writelog(7, peerConnected.getPeerId(), parent.selfId,0,0);
         parent.removefrominterestedPeerList(peerConnected.getPeerId());
+        if(parent.myFileHandler.checkIfFinish()){
+            parent.updateDoneSet(peerConnected.getPeerId());
+        }
     }
 
     public void receiveChokeMsg(){

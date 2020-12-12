@@ -182,7 +182,7 @@ public class MyFileHandler {
         }
     }
 
-    public void putChunk(int pieceIndex, byte[] fileData){
+    synchronized public void putChunk(int pieceIndex, byte[] fileData){
         try {
 
             String path = selfId +"/"+ CommonConfigHandler.getInstance().getProjectConfiguration().getFileName() + "." + pieceIndex;
