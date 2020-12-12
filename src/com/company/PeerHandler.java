@@ -259,6 +259,7 @@ public class PeerHandler extends Thread {
         // A requests a piece but get choked before receiving result
         RequestMessage requestMessage = new RequestMessage(pieceId);
         byte[] requestMessageInBytes = requestMessage.getMessage();
+        parent.setIsRequested(pieceId, true);
         // send over TCP
         sendMessage(requestMessageInBytes);
     }

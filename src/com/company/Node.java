@@ -399,10 +399,12 @@ public class Node extends Thread{
                         temp.retainAll(getinterestedPeerList());
                         List<Integer> tempList = new ArrayList<Integer>(temp);
                         Random rand = new Random();
-                        int randomElement = tempList.get(rand.nextInt(tempList.size()));
-                        setOptimisticallySelectedPeer(randomElement);
-                        node.PeerMap.get(randomElement).commandQueue.add(new Command(Constants.UNCHOKE, -1));
-                        node.logger.writeLogForOptNeighbor(node.selfPeer.getPeerId(), randomElement);
+                        if(!tempList.isEmpty()){
+                            int randomElement = tempList.get(rand.nextInt(tempList.size()));
+                            setOptimisticallySelectedPeer(randomElement);
+                            node.PeerMap.get(randomElement).commandQueue.add(new Command(Constants.UNCHOKE, -1));
+                            node.logger.writeLogForOptNeighbor(node.selfPeer.getPeerId(), randomElement);
+                        }
                     }
                     try {
                         Thread.sleep(getm() * 1000); // m = optimistic unchoking interval
