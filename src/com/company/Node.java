@@ -207,7 +207,7 @@ public class Node extends Thread{
         donePeerLock.lock();
         donePeers.add(peerId);
         System.out.println(selfId + " : got updateDoneSet size =  " + donePeers.size());
-        if(donePeers.size() == peerInfoHandler.getPeerHashMap().size() - 1){
+        if((donePeers.size() == peerInfoHandler.getPeerHashMap().size() - 3) && (this.myFileHandler.checkIfFinish() == true)){
             // TODO terminate program here
             System.out.println("\n ******** " + currentThread().getName() + " :  ********** All peers completed ********* \n");
             donePeerLock.unlock();
@@ -224,6 +224,15 @@ public class Node extends Thread{
                 peerhandler.commandQueue.add(command);
         }
     }
+
+    public void sendDoneUpdateToAll(){
+        PeerHandler[] handlersSet = PeerMap.values().toArray(new PeerHandler[0]);
+        Command command = new Command(Constants.DONE, -1);
+        for (PeerHandler peerhandler : handlersSet){
+            peerhandler.commandQueue.add(command);
+        }
+    }
+
     //setters for used variables
     public void setinterestedPeerList(HashSet<Integer>  interestedPeers) {
         this.interestedPeers = interestedPeers;
