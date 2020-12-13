@@ -1,9 +1,5 @@
-package com.company.filehandler;
+package com.company;
 
-import com.company.Util;
-import com.company.pojo.ProjectConfiguration;
-
-import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;

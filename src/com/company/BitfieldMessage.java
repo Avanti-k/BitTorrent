@@ -1,7 +1,5 @@
 package com.company;
 
-import com.company.filehandler.CommonConfigHandler;
-
 public class BitfieldMessage extends Message{
     private byte[] bitfield; // 2 bytes I think
 

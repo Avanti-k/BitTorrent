@@ -1,8 +1,5 @@
 package com.company;
 
-import com.company.filehandler.PeerInfoHandler;
-import com.company.filehandler.MyFileHandler;
-
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.lang.Thread;
@@ -14,8 +11,6 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import com.company.pojo.ProjectConfiguration;
-import com.company.filehandler.CommonConfigHandler;
 
 // Actual node, will keep listening to msgs and divert  them to peer handlers accordingly.
 // one new peer handler per peer.
@@ -211,12 +206,14 @@ public class Node extends Thread{
             // TODO terminate program here
             System.out.println("\n ******** " + currentThread().getName() + " :  ********** All peers completed ********* \n");
             donePeerLock.unlock();
-            System.exit(0);
+
 
         }
         donePeerLock.unlock();
 
     }
+
+//    public terminator{}
     public void sendHavePieceUpdateToAll(int pieceIndex){
         PeerHandler[] handlersSet = PeerMap.values().toArray(new PeerHandler[0]);
         Command command = new Command(Constants.HAVE, pieceIndex);

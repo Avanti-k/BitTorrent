@@ -1,4 +1,4 @@
-package com.company.filehandler;
+package com.company;
 
 import com.company.Peer;
 

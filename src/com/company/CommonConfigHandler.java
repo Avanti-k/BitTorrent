@@ -1,6 +1,4 @@
-package com.company.filehandler;
-
-import com.company.pojo.ProjectConfiguration;
+package com.company;
 
 import java.io.*;
 

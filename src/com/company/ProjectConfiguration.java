@@ -1,4 +1,4 @@
-package com.company.pojo;
+package com.company;
 
 public class ProjectConfiguration {
     int NumberOfPreferredNeighbors;
