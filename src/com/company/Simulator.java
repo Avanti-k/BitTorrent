@@ -26,22 +26,18 @@ public class Simulator {
 
             Node node4 = new Node(1004);
             node4.start();
-            Thread.sleep(6000);
 
 
             Node node5 = new Node(1005);
             node5.start();
-            Thread.sleep(6000);
 
 
             Node node6 = new Node(1006);
             node6.start();
-            Thread.sleep(9000);
 
 
             Node node7 = new Node(1007);
             node7.start();
-            Thread.sleep(6000);
 
 
             Node node8 = new Node(1008);

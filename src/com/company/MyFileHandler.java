@@ -178,6 +178,38 @@ public class MyFileHandler {
         }
     }
 
+
+
+
+
+
+    public static synchronized boolean canITerminate() {
+
+        String line;
+        int hasFileCount = 1;
+
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(
+                    "PeerInfo.cfg"));
+
+            while ((line = in.readLine()) != null) {
+                hasFileCount = hasFileCount
+                        * Integer.parseInt(line.trim().split("\\s+")[3]);
+            }
+            if (hasFileCount == 0) {
+                in.close();
+                return false;
+            } else {
+                in.close();
+                return true;
+            }
+
+        } catch (Exception e) {
+            return false;
+        }
+
+    }
+
     synchronized public void putChunk(int pieceIndex, byte[] fileData){
         try {
 
@@ -224,7 +256,7 @@ public class MyFileHandler {
         if(set.length() == 0){
             return false;
         }
-        if(set.length() != totalChunks){
+        if(set.length() < totalChunks){
             return false;
         }
         for(int i = 0; i < set.length(); i++){

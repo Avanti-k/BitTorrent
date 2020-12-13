@@ -123,6 +123,79 @@ public class Node extends Thread{
 
 
     }
+
+
+    public void updateConfigForComplete(String clientID, int hasFile)
+    {
+        BufferedWriter out = null;
+        BufferedReader in = null;
+
+        try
+        {
+            in= new BufferedReader(new FileReader("PeerInfo.cfg"));
+
+            String line;
+            StringBuffer buffer = new StringBuffer();
+
+            while((line = in.readLine()) != null)
+            {
+                if(line.trim().length() > 0){
+                if(line.trim().split("\\s+")[0].equals(clientID))
+                {
+                    buffer.append(line.trim().split("\\s+")[0] + " " + line.trim().split("\\s+")[1] + " " + line.trim().split("\\s+")[2] + " " + hasFile);
+                }
+                else
+                {
+                    buffer.append(line);
+
+                }
+                buffer.append("\n");}
+            }
+
+            in.close();
+
+            out= new BufferedWriter(new FileWriter("PeerInfo.cfg"));
+            out.write(buffer.toString());
+
+            out.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+
+    public static synchronized boolean canITerminate() {
+
+        String line;
+        int hasFileCount = 1;
+
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(
+                    "PeerInfo.cfg"));
+
+            while ((line = in.readLine()) != null) {
+                if(line.trim().length() > 0){
+                    hasFileCount = hasFileCount
+                            * Integer.parseInt(line.trim().split("\\s+")[3]);
+                }
+            }
+            if (hasFileCount == 0) {
+                in.close();
+                return false;
+            } else {
+                in.close();
+                return true;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+
+    }
+
 //        catch (Exception e){
 //            e.printStackTrace();
 //        }
@@ -321,6 +394,12 @@ public class Node extends Thread{
             public void run() {
                 while(true) {
                     System.out.println("Thread for selecting preferred peer Running");
+                    if(myFileHandler.checkIfFinish()){
+                        updateConfigForComplete(String.valueOf(selfId),1);
+                    }
+                    if(canITerminate()){
+                        System.exit(0);;
+                    }
                     //select preferred neighbors
                     //sort interested peers in dec order of their downloading rate
                     //for those peers, who is not there in the map - did this - check if its correct
